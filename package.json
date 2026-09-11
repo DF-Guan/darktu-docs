@@ -1,0 +1,19 @@
+{
+  "name": "darktu-docs",
+  "version": "1.0.0",
+  "description": "Darktu 官方知识库 - 专为创作者打造的极客文档中心 (docs.darktu.com)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node test/verify_feature_map.js && node test/verify_dune_architecture.js && node test/verify_reversibility_gate.js && node test/docs_integrity.test.js",
+    "verify:fm": "node test/verify_feature_map.js",
+    "verify:dune": "node test/verify_dune_architecture.js",
+    "verify:gate": "node test/verify_reversibility_gate.js",
+    "deploy:prod": "npx wrangler pages deploy dist --project-name=darktu-docs"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

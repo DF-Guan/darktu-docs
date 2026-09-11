@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Darktu 文档工程与排版学术库 - 行业通用知识库 (docs.darktu.com)</title>
+  <meta name="description" content="全面涵盖 CommonMark / GFM 规范演进、W3C 中文排版需求 (CLReq)、LaTeX 数学公式、Mermaid 图表可视化、富文本剪贴板 Inliner 机制、对象存储图床架构与技术写作合规工程。" />
+  <meta name="keywords" content="Markdown规范, CommonMark, GFM, W3C CLReq, 中文排版需求, 盘古之白, 标点挤压, LaTeX公式, KaTeX, Mermaid流程图, 富文本剪贴板, CSS Inliner, 图床架构, S3, R2, docs.darktu.com" />
+  <link rel="icon" type="image/png" href="./logo-128.png" />
+  <link rel="canonical" href="https://docs.darktu.com/" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Darktu 文档工程与排版学术库 - 行业通用知识库" />
+  <meta property="og:description" content="深度、专业、权威的 Markdown 标准规范与数字出版工程技术知识库。" />
+  <meta property="og:url" content="https://docs.darktu.com/" />
+  <meta property="og:image" content="https://docs.darktu.com/logo-128.png" />
+  <script type="module" crossorigin src="./assets/index-BxG_3uLK.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-AhhdAqF9.css">
+</head>
+<body>
+  <!-- 顶部阅读进度条 -->
+  <div id="readingProgressBar" class="reading-progress-bar"></div>
+
+  <div id="app">
+    <!-- 顶部 Header -->
+    <header class="docs-header">
+      <div class="header-left">
+        <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="打开目录菜单">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+        <a href="#/overview" class="docs-brand">
+          <img src="./logo-128.png" alt="Darktu Docs Logo" width="30" height="30" class="docs-brand-logo" />
+          <span class="docs-brand-text">Darktu 知识库</span>
+          <span class="docs-brand-badge">学习百科</span>
+        </a>
+      </div>
+
+      <!-- 全局搜索按钮 (Cmd+K) -->
+      <div class="header-center">
+        <button id="headerSearchBtn" class="header-search-btn" title="搜索知识词条 (Ctrl+K / Cmd+K)">
+          <div class="search-placeholder">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>搜索语法规则、排版规范与技术术语...</span>
+          </div>
+          <span class="search-hotkey">⌘ K</span>
+        </button>
+      </div>
+
+      <!-- 右侧生态链接 -->
+      <div class="header-right">
+        <a href="https://md.darktu.com" target="_blank" rel="noopener noreferrer" class="nav-link-btn highlight" title="打开 WeMarkdown 在线编辑器">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          <span>WeMarkdown 编辑器</span>
+        </a>
+        <a href="https://darktu.com" target="_blank" rel="noopener noreferrer" class="nav-link-btn" title="访问 Darktu 官网">
+          <span>Darktu 官网</span>
+        </a>
+        <a href="https://github.com/DF-Guan/we-markdown" target="_blank" rel="noopener noreferrer" class="nav-link-btn" title="查看 GitHub 开源仓库">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          <span>GitHub</span>
+        </a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 移动端侧边栏遮罩 -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop" style="display: none;"></div>
+
+    <!-- 主体 3 栏容器 -->
+    <div class="docs-main-container">
+      <!-- 左侧：多级树形目录 -->
+      <aside id="docsSidebar" class="docs-sidebar">
+        <div class="sidebar-search-box">
+          <input id="sidebarFilter" type="text" class="sidebar-filter-input" placeholder="过滤当前目录..." />
+        </div>
+        <nav id="sidebarTree" class="sidebar-tree"></nav>
+      </aside>
+
+      <!-- 中间：正文渲染区 -->
+      <main class="docs-content-area">
+        <nav id="docsBreadcrumb" class="docs-breadcrumb"></nav>
+        <div id="docsMetaHeader" class="docs-meta-header"></div>
+        <article id="docsBody" class="docs-markdown-body"></article>
+        <footer id="docsFooter" class="docs-page-footer"></footer>
+      </main>
+
+      <!-- 右侧：本页大纲 TOC -->
+      <aside class="docs-toc">
+        <div class="toc-header">
+          <span class="toc-title">目录</span>
+          <button id="backToTopBtn" class="toc-back-top" title="返回顶部">↑ 顶部</button>
+        </div>
+        <ul id="tocList" class="toc-list"></ul>
+      </aside>
+    </div>
+
+    <!-- 全局检索弹窗 (Ctrl+K) -->
+    <div id="searchModalOverlay" class="search-modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="search-modal">
+        <div class="search-input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="searchInputField" class="search-input-field" type="text" placeholder="输入关键字搜索全库规范、公式与技术文章..." autocomplete="off" />
+          <button id="searchCloseBtn" class="search-close-key" type="button" title="点击或按 ESC 退出">ESC 退出</button>
+        </div>
+        <div id="searchResultsList" class="search-results-list"></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+# Change Log\n\n## [0.1.0] - 2026-09-10\n- Initial scaffold created with Dune 4-Tier Architecture.\n

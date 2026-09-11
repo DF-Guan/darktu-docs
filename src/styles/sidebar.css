@@ -1,0 +1,141 @@
+/* ==========================================================================
+   Darktu 知识库左侧树形目录 (sidebar.css)
+   飞书知识库层级折叠、图标与激活指示器
+   ========================================================================== */
+
+.docs-sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height));
+  position: sticky;
+  top: var(--header-height);
+  overflow-y: auto;
+  user-select: none;
+}
+
+.sidebar-search-box {
+  padding: 14px 16px 10px;
+  position: sticky;
+  top: 0;
+  background: var(--bg-sidebar);
+  z-index: 10;
+}
+
+.sidebar-filter-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.sidebar-filter-input:focus {
+  border-color: var(--border-focus);
+}
+
+.sidebar-tree {
+  padding: 8px 12px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-category {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.sidebar-category-header:hover {
+  background: var(--bg-hover);
+}
+
+.category-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.sidebar-category.collapsed .category-chevron {
+  transform: rotate(-90deg);
+}
+
+.sidebar-category.collapsed .sidebar-items-list {
+  display: none;
+}
+
+.category-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.sidebar-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+  margin-top: 4px;
+  border-left: 1px solid var(--border-color);
+}
+
+.sidebar-item-link {
+  display: flex;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: all 0.12s ease;
+  position: relative;
+  line-height: 1.4;
+}
+
+.sidebar-item-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.sidebar-item-link.active {
+  color: var(--accent-primary);
+  background: var(--accent-light);
+  font-weight: 600;
+}
+
+.sidebar-item-link.active::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--accent-primary);
+  border-radius: 0 2px 2px 0;
+}
