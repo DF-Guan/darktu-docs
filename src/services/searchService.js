@@ -11,7 +11,28 @@ import { ARTICLES_CONTENT } from "../data/articlesContent.js";
  * @property {object} doc
  * @property {number} score
  * @property {string} snippet
+ * @property {string[]} tokens
  */
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * 在文本中高亮匹配的搜索关键词
+ */
+export function highlightKeywords(text, query) {
+  if (!text || !query || !query.trim()) return text;
+  const tokens = query.trim().split(/\s+/).filter(Boolean).map(escapeRegExp);
+  if (tokens.length === 0) return text;
+
+  try {
+    const pattern = new RegExp(`(${tokens.join("|")})`, "gi");
+    return text.replace(pattern, '<mark class="search-highlight">$1</mark>');
+  } catch (e) {
+    return text;
+  }
+}
 
 /**
  * 执行全文关键字检索
@@ -60,8 +81,8 @@ export function searchKnowledgeBase(query) {
       let snippet = "";
       const originalText = ARTICLES_CONTENT[doc.id] || "";
       if (bestMatchIndex !== -1) {
-        const start = Math.max(0, bestMatchIndex - 40);
-        const end = Math.min(originalText.length, bestMatchIndex + 80);
+        const start = Math.max(0, bestMatchIndex - 35);
+        const end = Math.min(originalText.length, bestMatchIndex + 85);
         snippet = (start > 0 ? "..." : "") +
           originalText.slice(start, end).replace(/\n/g, " ") +
           (end < originalText.length ? "..." : "");
@@ -73,6 +94,7 @@ export function searchKnowledgeBase(query) {
         doc,
         score,
         snippet,
+        tokens: rawTokens,
       });
     }
   });

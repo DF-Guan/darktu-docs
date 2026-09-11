@@ -171,5 +171,104 @@ export function panguSpacing(text) {
 2. **标题与内容的亲密性原则 (Law of Proximity)**：
    - 标题上方间距（段前距）必须**显著大于**标题下方间距（段后距）；
    - 标准比例：**段前距 : 段后距 = 2.5 : 1**。确保标题在视觉上明确与其下属内容紧密关联，而不是漂浮在两个段落正中间。
+`,
+
+  "typography/web-font-optimization": `# Web 中文字体加载与切片子集化工程实践
+
+> 本文探讨中文排版在 Web 与移动端面临的“字体体积过大”工程困境，系统解析 WOFF2 压缩、font-display 渲染策略、字蛛子集化与 unicode-range 动态切片技术。
+
+---
+
+## 1. 中文字体的体积困局与渲染机制
+
+英文字体通常只需包含 26 个拉丁字母、大小写、数字与常用符号，全套字形字符集通常在 **100KB 以内**。
+
+而中文字体面临截然不同的量级挑战：
+- **GB 2312 编码**：收录 6,763 个汉字；
+- **GBK / 现代通用规范汉字表**：收录 20,902 个汉字；
+- **GB 18030 完整字库**：收录 70,000+ 汉字与少数民族字符。
+
+单个未经优化的中文 OTF / TTF 字体文件动辄 **10MB 至 25MB**。若在网页端全量下载，在移动网络下将导致数秒甚至数十秒的白屏阻塞。
+
+\`\`\`mermaid
+flowchart LR
+    OriginFont["原始中文字体 (OTF/TTF)<br/>15MB ~ 25MB"] --> Compress["WOFF2 Brotli 算法压缩<br/>压制至 8MB ~ 12MB (仍过大)"]
+    Compress --> StrategyA["方案 A: 字蛛 (Font-Spider)<br/>静态抓取 HTML 已用汉字子集化<br/>体积压制至 10KB ~ 80KB"]
+    Compress --> StrategyB["方案 B: 动态切片 (cn-font-split)<br/>按字频划分为 100+ 切片分包<br/>按需利用 unicode-range 异步按需拉取"]
+\`\`\`
+
+---
+
+## 2. font-display 渲染策略与 FOIT/FOUT 权衡
+
+在 CSS 中引入自定义字体时，\`font-display\` 属性决定了字体下载完成前的文字渲染行为：
+
+| 策略参数 | 阻塞期 (Block) | 交换期 (Swap) | 渲染表现分析 | 最佳应用场景 |
+| :--- | :--- | :--- | :--- | :--- |
+| **\`block\`** | 短暂阻塞 (约 3s) | 无限期 | 产生 **FOIT (不可见文本闪烁)**，下载前页面呈现空白 | 强调品牌视觉一致性的标语或特定艺术字 |
+| **\`swap\`** (推荐) | 极短 (约 100ms) | 无限期 | 产生 **FOUT (未样式化文本闪烁)**，立即以系统后备字体呈现，下载完瞬间替换 | 正文长文本阅读、知识库与技术文档 |
+| **\`fallback\`** | 极短 (约 100ms) | 短暂 (约 3s) | 若 3 秒内未下载完，全篇永久保持系统默认字体 | 弱网环境下防止页面文字反复抖动重排 |
+| **\`optional\`** | 极短 (约 100ms) | 无 | 由浏览器根据网络状况决定是否放弃下载 | 移动端蜂窝省流模式 |
+
+\`\`\`css
+@font-face {
+  font-family: "CustomSerif";
+  src: url("/fonts/custom-serif.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+}
+\`\`\`
+
+---
+
+## 3. 字蛛 (Font-Spider) 静态抓取子集化
+
+对于站点标题、宣传页或特定专有词汇，可采用静态子集化工具（如 \`font-spider\`）：
+1. 扫描构建产物 HTML 中的所有汉字字符；
+2. 构建去重后的高频字表（如仅包含 320 个不同汉字）；
+3. 从全量母字体中剔除多余的数万个字形，重构生成仅包含这 320 字的微型 WOFF2 字体；
+4. 体积可从 15MB 骤降至 **15KB ~ 30KB**，兼顾高颜值与秒开体验。
+
+---
+
+## 4. 现代动态分包切片：unicode-range 方案
+
+对于知识库、维基百科等用户会不断更新、无法静态预测字符集的系统，现代标准方案是基于 **CSS \`unicode-range\`** 的多包切片：
+
+\`\`\`css
+/* 切片 001：包含最常用的 300 个汉字与基本标点 */
+@font-face {
+  font-family: "DarktuSans";
+  src: url("/fonts/chunk-001.woff2") format("woff2");
+  unicode-range: U+4E00-4E2F, U+3000-303F;
+}
+
+/* 切片 002：次常用汉字 */
+@font-face {
+  font-family: "DarktuSans";
+  src: url("/fonts/chunk-002.woff2") format("woff2");
+  unicode-range: U+4E30-4E6F;
+}
+\`\`\`
+
+- 浏览器在解析 DOM 时，**只有当页面中真实出现了属于该 unicode-range 区间的汉字**，才会发起 HTTP/2 并发请求加载对应的切片；
+- 首屏平均仅需加载 2~4 个小切片（合计 100KB~200KB），即可实现全站高质感排版。
+
+---
+
+## 5. 系统后备字族 (Font Family Fallback) 最佳实践
+
+为防止网络故障或弱网下载延迟，CSS 必须配置无瑕疵的系统原生回退链路：
+
+\`\`\`css
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei",
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+\`\`\`
 `
 };
+

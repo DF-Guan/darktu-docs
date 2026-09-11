@@ -3,22 +3,38 @@
  * 遵循 Dune 架构第 4 公理（单文件行数 <= 250 行，模块清晰解耦）
  */
 
-import { DOCS_NAVIGATION, ALL_DOCS, getDocBySlugOrId } from "./data/navigation.js";
+import { DOCS_NAVIGATION, getDocBySlugOrId } from "./data/navigation.js";
 import { getArticleMarkdown } from "./data/articlesContent.js";
 import { renderMarkdown } from "./services/markdownRenderer.js";
-import { searchKnowledgeBase } from "./services/searchService.js";
+import { setupSearchUI } from "./services/searchUI.js";
 import { getInitialTheme, applyTheme, toggleTheme } from "./services/themeService.js";
-import { setupCodeCopy, setupTOCScrollSpy, setupReadingProgressAndBackTop, getWikiEditLinks } from "./services/uiHelpers.js";
+import {
+  setupCodeCopy,
+  setupTOCScrollSpy,
+  setupReadingProgressAndBackTop,
+  setupHeadingAnchorLinks,
+  getWikiEditLinks,
+} from "./services/uiHelpers.js";
+import { setupWikilinkPreview } from "./services/wikilinkPreview.js";
+import { setupKeyboardShortcuts } from "./services/keyboardShortcuts.js";
+import { setupReadingSettings } from "./services/readingSettings.js";
 
 export class DarktuDocsApp {
   constructor() {
     this.currentDoc = null;
+    this.prev = null;
+    this.next = null;
     this.init();
   }
 
   init() {
     setupCodeCopy();
     setupReadingProgressAndBackTop();
+    setupHeadingAnchorLinks(() => this.currentDoc);
+    setupWikilinkPreview();
+    setupReadingSettings();
+    setupKeyboardShortcuts(() => this);
+    setupSearchUI();
 
     // 1. 初始化主题
     applyTheme(getInitialTheme());
@@ -41,9 +57,13 @@ export class DarktuDocsApp {
     this.renderSidebar();
     window.addEventListener("hashchange", () => this.handleRoute());
     this.handleRoute();
+  }
 
-    // 4. 全局检索
-    this.initSearch();
+  getCurrentNavCardSlugs() {
+    return {
+      prevSlug: this.prev ? this.prev.slug : null,
+      nextSlug: this.next ? this.next.slug : null,
+    };
   }
 
   renderSidebar() {
@@ -60,15 +80,11 @@ export class DarktuDocsApp {
           <span class="category-badge">${cat.badge}</span>
         </div>
         <div class="sidebar-items-list">
-          ${cat.items
-            .map(
-              (item) => `
+          ${cat.items.map((item) => `
             <a href="#/${item.slug}" class="sidebar-item-link" id="link-${item.id.replace(/\//g, "-")}">
               ${item.title}
             </a>
-          `
-            )
-            .join("")}
+          `).join("")}
         </div>
       </div>
     `).join("");
@@ -85,8 +101,14 @@ export class DarktuDocsApp {
 
   handleRoute() {
     const hash = window.location.hash;
-    const { doc, prev, next } = getDocBySlugOrId(hash);
+    const parts = hash.replace(/^#\/?/, "").split("#");
+    const docSlug = parts[0] || "overview";
+    const headingAnchor = parts[1] || "";
+
+    const { doc, prev, next } = getDocBySlugOrId(docSlug);
     this.currentDoc = doc;
+    this.prev = prev;
+    this.next = next;
 
     document.querySelectorAll(".sidebar-item-link").forEach((el) => el.classList.remove("active"));
     const activeLink = document.getElementById(`link-${doc.id.replace(/\//g, "-")}`);
@@ -97,7 +119,16 @@ export class DarktuDocsApp {
     if (backdrop) backdrop.style.display = "none";
 
     this.renderContent(doc, prev, next);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (headingAnchor) {
+      setTimeout(() => {
+        const targetEl = document.getElementById(headingAnchor);
+        targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+        targetEl?.classList.add("heading-highlight-pulse");
+      }, 100);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   renderContent(doc, prev, next) {
@@ -140,15 +171,11 @@ export class DarktuDocsApp {
       tocListEl.innerHTML =
         toc.length === 0
           ? '<li class="toc-item"><span style="color: var(--text-muted);">本条目暂无小节</span></li>'
-          : toc
-              .map(
-                (t) => `
+          : toc.map((t) => `
             <li class="toc-item level-${t.level}">
               <a href="#${t.id}" class="toc-link" data-heading="${t.id}">${t.text}</a>
             </li>
-          `
-              )
-              .join("");
+          `).join("");
       setupTOCScrollSpy();
     }
 
@@ -165,69 +192,13 @@ export class DarktuDocsApp {
           </div>
         </div>
         <div style="display: flex; gap: 16px; width: 100%; margin-top: 24px;">
-          ${prev ? `<a href="#/${prev.slug}" class="nav-card prev"><span class="nav-card-label">← 上一词条</span><span class="nav-card-title">${prev.title}</span></a>` : '<div style="flex:1;"></div>'}
-          ${next ? `<a href="#/${next.slug}" class="nav-card next"><span class="nav-card-label">下一词条 →</span><span class="nav-card-title">${next.title}</span></a>` : '<div style="flex:1;"></div>'}
+          ${prev ? `<a href="#/${prev.slug}" class="nav-card prev"><span class="nav-card-label">← [ 上一篇</span><span class="nav-card-title">${prev.title}</span></a>` : '<div style="flex:1;"></div>'}
+          ${next ? `<a href="#/${next.slug}" class="nav-card next"><span class="nav-card-label">下一篇 ] →</span><span class="nav-card-title">${next.title}</span></a>` : '<div style="flex:1;"></div>'}
         </div>
       `;
     }
 
     document.title = `${doc.title} - Darktu 知识库`;
-  }
-
-  initSearch() {
-    const modal = document.getElementById("searchModalOverlay");
-    const input = document.getElementById("searchInputField");
-    const resultsContainer = document.getElementById("searchResultsList");
-
-    const openSearch = () => {
-      modal?.classList.remove("hidden");
-      input?.focus();
-    };
-
-    const closeSearch = () => {
-      modal?.classList.add("hidden");
-      if (input) input.value = "";
-      if (resultsContainer) resultsContainer.innerHTML = "";
-    };
-
-    document.getElementById("headerSearchBtn")?.addEventListener("click", openSearch);
-    document.getElementById("searchCloseBtn")?.addEventListener("click", closeSearch);
-
-    modal?.addEventListener("click", (e) => {
-      if (e.target === modal) closeSearch();
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        openSearch();
-      } else if (e.key === "Escape" || e.keyCode === 27) {
-        closeSearch();
-      }
-    });
-
-    input?.addEventListener("input", (e) => {
-      const q = e.target.value;
-      const results = searchKnowledgeBase(q);
-      if (!resultsContainer) return;
-
-      resultsContainer.innerHTML =
-        results.length === 0
-          ? '<div class="search-empty">未检索到匹配的知识条目</div>'
-          : results
-              .map(
-                (r) => `
-            <a href="#/${r.doc.slug}" class="search-result-item" onclick="document.getElementById('searchModalOverlay').classList.add('hidden')">
-              <div class="search-result-header">
-                <span class="search-result-title">${r.doc.title}</span>
-                <span class="search-result-cat">${r.doc.categoryTitle}</span>
-              </div>
-              <div class="search-result-snippet">${r.snippet}</div>
-            </a>
-          `
-              )
-              .join("");
-    });
   }
 }
 

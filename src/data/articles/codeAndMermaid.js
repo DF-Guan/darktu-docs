@@ -243,5 +243,89 @@ mindmap
       Mermaid 可视化图表
       Prism 代码高亮
 \`\`\`
+`,
+
+  "diagrams/mermaid-gantt-c4": `# Mermaid 甘特图与 C4 软件架构模型建模指南
+
+> 本文深入剖析项目排期甘特图 (Gantt Chart) 的时间线规划语法，并详解现代软件架构领域广泛推崇的 C4 模型（上下文、容器、组件与代码）在 Mermaid 中的标准建模范式。
+
+---
+
+## 1. 甘特图 (Gantt) 项目排期与时间线建模
+
+在研发管理与工程交付中，使用纯文本甘特图可以避免维护庞大的二进制 Excel 文件，并实现 Git 版本精细化追踪：
+
+\`\`\`mermaid
+gantt
+    title Darktu 知识库系统升级排期
+    dateFormat YYYY-MM-DD
+    axisFormat %m/%d
+    excludes weekends
+
+    section 架构设计与协议
+    CommonMark 与 GFM 规范基线      :done,    des1, 2026-09-01, 2026-09-03
+    W3C 中文排版需求 (CLReq) 建模    :done,    des2, 2026-09-02, 2026-09-05
+    Dune 5 大架构公理确立          :done,    des3, 2026-09-04, 2026-09-06
+
+    section 核心功能研发
+    维基百科式正文内链悬浮即时预览    :active,  dev1, 2026-09-07, 3d
+    全键盘无障碍快捷键导航系统        :active,  dev2, after des3, 4d
+    字号排版与舒适度控制器          :         dev3, after dev1, 2d
+
+    section 验收与发布门禁
+    38 篇全量词条自动化断言质检      :crit,    qa1,  2026-09-12, 2d
+    Cloudflare 边缘加速与 SSL 验证  :milestone, m1,  2026-09-14, 0d
+\`\`\`
+
+### 1.1 甘特图状态与修饰符说明
+- **\`done\`**：已完成任务，在图表中以灰暗/完成色呈现；
+- **\`active\`**：当前进行中任务，以高亮主题色标识；
+- **\`crit\`**：关键路径 (Critical Path) 任务，以红色警示色标注；
+- **\`milestone\`**：里程碑节点，工期为 0 天，以菱形符号展现；
+- **\`after <id>\`**：声明任务依赖链，自动跟随前序任务截止时间对齐。
+
+---
+
+## 2. C4 软件架构模型设计理念
+
+C4 模型由 Simon Brown 提出，旨在像 Google 地图一样为软件架构提供 4 级缩放视角：
+
+1. **Context（上下文系统级）**：最高层级，展示系统与外部用户（Person）及其他外部系统（External System）的交互边界；
+2. **Container（容器级）**：聚焦系统内部的独立运行应用（Web 前端、API 后端、数据库、队列与对象存储）；
+3. **Component（组件级）**：深入具体容器内部的核心模块、控制器、服务类与领域模型；
+4. **Code（代码级）**：深入具体类、接口与函数（通常直接阅读源码或查看类图）。
+
+---
+
+## 3. Mermaid C4 上下文图 (C4Context) 实战
+
+Mermaid 内置了对 C4 模型宏指令的支持，书写语义极其贴合系统工程思维：
+
+\`\`\`mermaid
+C4Context
+    title 知识库与内容分发系统 C4 上下文架构图
+
+    Person(user, "技术创作者 / 开发者", "撰写 Markdown、查阅排版规范与公式手册")
+    System(darktuDocs, "Darktu 知识库 (docs.darktu.com)", "维基百科式开放文档百科，提供离线阅读与实时预览")
+    System(darktuEditor, "WeMarkdown 在线编辑器", "支持一键 CSS 行内化分发与 LaTeX 渲染的排版编辑器")
+    System_Ext(github, "GitHub 开源仓库", "托管词条源码，接收社区勘误 Issue 与 PR 提交")
+    System_Ext(cfPages, "Cloudflare Pages", "全自动化构建与全球 Anycast 边缘 CDN 加速分发")
+
+    Rel(user, darktuDocs, "浏览学习、按键极速跳转、检索知识")
+    Rel(user, darktuEditor, "编辑长文并一键复制到公众号/知乎")
+    Rel(darktuDocs, github, "点击源码直达编辑与发起勘误 Issue")
+    Rel(github, cfPages, "Git Push 自动触发构建部署")
+    Rel(cfPages, darktuDocs, "分发最新静态资源与 SSL 证书")
+\`\`\`
+
+### 3.1 C4 核心元素宏定义语法
+- **\`Person(id, label, desc)\`**：定义系统终端用户角色；
+- **\`System(id, label, desc)\`**：定义所设计的目标核心软件系统；
+- **\`System_Ext(id, label, desc)\`**：定义不受本团队控制的外部第三方依赖系统；
+- **\`Rel(from, to, label, tech?)\`**：定义单向通信关系与采用的网络协议（如 HTTPS/WebSocket）。
+
+> [!TIP]
+> **可维护性建议**：在编写技术文档与 RFC 架构提案时，优先使用 C4Context 与 C4Container 代替传统的无规矩混乱架构图，能够让新加入团队的工程师在 5 分钟内快速建立系统全貌认知。
 `
 };
+

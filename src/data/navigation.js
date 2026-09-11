@@ -7,7 +7,7 @@ export const DOCS_NAVIGATION = [
   {
     id: "markdown-specs",
     title: "1. 语法与规范",
-    badge: "5 篇",
+    badge: "7 篇",
     items: [
       {
         id: "markdown-specs/spec-evolution",
@@ -41,12 +41,24 @@ export const DOCS_NAVIGATION = [
         title: "现代 Callout 提示块指南",
         description: "[!NOTE]、[!TIP]、[!IMPORTANT]、[!WARNING]、[!CAUTION] 五大提示块语法体系。",
       },
+      {
+        id: "markdown-specs/frontmatter-and-metadata",
+        slug: "frontmatter-and-metadata",
+        title: "YAML Frontmatter 与元数据规范",
+        description: "Hugo、Jekyll、Astro 与 Next.js 等前置元数据规范、YAML/TOML/JSON 对比与 AST 灰度解析。",
+      },
+      {
+        id: "markdown-specs/edge-cases-and-gotchas",
+        slug: "edge-cases-and-gotchas",
+        title: "Markdown 语法陷阱与歧义解析",
+        description: "紧凑/松散列表行距、有序列表断裂、围栏反引号逃逸、表格单元格竖线与转义陷阱。",
+      },
     ],
   },
   {
     id: "typography",
     title: "2. 中文排版学",
-    badge: "4 篇",
+    badge: "5 篇",
     items: [
       {
         id: "typography/w3c-clreq",
@@ -72,12 +84,18 @@ export const DOCS_NAVIGATION = [
         title: "版面视觉节奏与字阶体系",
         description: "调和音阶模块化字号阶梯、行高系数计算、段落间距与标题亲密性法则。",
       },
+      {
+        id: "typography/web-font-optimization",
+        slug: "web-font-optimization",
+        title: "Web 中文字体加载与切片子集化",
+        description: "中文字体体积困境、font-display 渲染策略、字蛛子集化与 unicode-range 动态分包。",
+      },
     ],
   },
   {
     id: "math",
     title: "3. 数学公式与符号",
-    badge: "4 篇",
+    badge: "5 篇",
     items: [
       {
         id: "math/latex-fundamentals",
@@ -103,12 +121,18 @@ export const DOCS_NAVIGATION = [
         title: "数学、物理与希腊字母速查表",
         description: "24 个希腊字母大小写对照、集合算子、微积分算子与逻辑命题速查表。",
       },
+      {
+        id: "math/physics-and-chemistry",
+        slug: "physics-and-chemistry",
+        title: "物理量单位与 mhchem 化学方程式",
+        description: "SI 国际单位制正斜体规范、mhchem 宏包化学式与核反应衰变方程排版指南。",
+      },
     ],
   },
   {
     id: "diagrams",
     title: "4. 代码高亮与图表",
-    badge: "5 篇",
+    badge: "6 篇",
     items: [
       {
         id: "diagrams/syntax-highlighting",
@@ -140,12 +164,18 @@ export const DOCS_NAVIGATION = [
         title: "Mermaid Git 拓扑图与思维导图",
         description: "Git Graph 提交/分支/合并拓扑图与 Mindmap 树形发散节点绘制指南。",
       },
+      {
+        id: "diagrams/mermaid-gantt-c4",
+        slug: "mermaid-gantt-c4",
+        title: "Mermaid 甘特图与 C4 架构模型",
+        description: "研发项目甘特图排期里程碑、依赖任务链与 C4 软件架构模型上下文与容器建模。",
+      },
     ],
   },
   {
     id: "clipboard",
     title: "5. 富文本与剪贴板",
-    badge: "4 篇",
+    badge: "5 篇",
     items: [
       {
         id: "clipboard/clipboard-mime-inliner",
@@ -170,6 +200,12 @@ export const DOCS_NAVIGATION = [
         slug: "svg-canvas-rendering",
         title: "SVG 矢量渲染与 Canvas 长图绘制",
         description: "foreignObject 虚拟化、Retina 高分抗锯齿缩放与 CORS 跨域污染防御策略。",
+      },
+      {
+        id: "clipboard/html-sanitizer-ast",
+        slug: "html-sanitizer-ast",
+        title: "DOMPurify 与 AST 白名单深度清洗",
+        description: "富文本跨站脚本 XSS 风险、突变型 mXSS 深度剖析与 DOMPurify 安全白名单配置。",
       },
     ],
   },
@@ -201,7 +237,7 @@ export const DOCS_NAVIGATION = [
   {
     id: "writing",
     title: "7. 写作实践与合规",
-    badge: "4 篇",
+    badge: "5 篇",
     items: [
       {
         id: "writing/technical-writing-guide",
@@ -226,6 +262,12 @@ export const DOCS_NAVIGATION = [
         slug: "local-first-architecture",
         title: "本地优先 (Local-First) 离线存储架构",
         description: "零延迟输入准则、数据所有权、IndexedDB 事务库与快照版本比对回滚。",
+      },
+      {
+        id: "writing/accessibility-a11y",
+        slug: "accessibility-a11y",
+        title: "数字文档无障碍访问规范 (A11y)",
+        description: "WCAG 2.2 核心原则、屏幕阅读器大纲流、色彩对比度科学与键盘完全无障碍操作。",
       },
     ],
   },
