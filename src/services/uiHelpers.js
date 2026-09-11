@@ -76,8 +76,8 @@ export function getWikiEditLinks(doc) {
   };
   const categoryKey = (doc.id || "").split("/")[0];
   const sourceFile = catToSourceFile[categoryKey] || "markdownSpecs.js";
-  const editUrl = `https://github.com/DF-Guan/we-markdown/blob/master/projects/darktu-docs/src/data/articles/${sourceFile}`;
-  const issueUrl = `https://github.com/DF-Guan/we-markdown/issues/new?title=${encodeURIComponent(
+  const editUrl = `https://github.com/DF-Guan/darktu-docs/blob/main/src/data/articles/${sourceFile}`;
+  const issueUrl = `https://github.com/DF-Guan/darktu-docs/issues/new?title=${encodeURIComponent(
     `[词条勘误] ${doc.title}`
   )}&body=${encodeURIComponent(
     `**词条名称**：${doc.title} (#/${doc.slug})\n**发现问题**：\n\n**修改建议**：\n`

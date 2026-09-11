@@ -165,8 +165,8 @@ npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
 ## 4. 社区协同与勘误渠道
 
 知识库源代码托管于 GitHub。欢迎每位读者对发现的错别字、陈旧规范或不准确描述提出改进：
-- **提交 Issue / 勘误建议**：[GitHub Issues 页面](https://github.com/DF-Guan/we-markdown/issues)
-- **提交 Pull Request 参与编辑**：[GitHub 仓库主页](https://github.com/DF-Guan/we-markdown)
+- **提交 Issue / 勘误建议**：[GitHub Issues 页面](https://github.com/DF-Guan/darktu-docs/issues)
+- **提交 Pull Request 参与编辑**：[GitHub 仓库主页](https://github.com/DF-Guan/darktu-docs)
 - **文档使用许可**：采用 **知识共享 署名-非商业性使用-相同方式共享 4.0 国际许可协议 (CC BY-NC-SA 4.0)**，支持自由学习与非商业传播。
 `
 };
