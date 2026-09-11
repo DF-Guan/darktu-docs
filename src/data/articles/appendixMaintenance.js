@@ -60,30 +60,29 @@ export const APPENDIX_MAINTENANCE_ARTICLES = {
 
   "appendix/maintenance-guide": `# 知识库编写与持续维护指引 (Maintenance Guide)
 
-> 本知识库借鉴维基百科（Wikipedia）的开放知识沉淀理念，旨在为所有学习排版、数字写作与文档工程的学习者提供准确、清晰、无虚饰的技术参考。本文说明其目录架构、内容准则与持续更新维护流程。
+> 本知识库借鉴维基百科（Wikipedia）的开放知识沉淀理念，旨在为所有学习排版、数字写作与文档工程的学习者提供准确、清晰、无虚饰的技术参考。本文说明其目录架构、实战项目知识持续反哺机制、权威文献溯源标准与自动化更新流水线。
 
 ---
 
 ## 1. 核心设计原则与风格准则
 
-为保证知识库长期的阅读体验与学术严谨性，所有词条必须遵循以下准则：
+为保证知识库长期的阅读体验与学术严谨性，所有词条编写与维护必须遵循以下准则：
 
 1. **客观中立，拒绝推销宣传**：
-   - 本知识库是学习与查阅工具，严禁写入任何产品营销套话、吹捧形容词或虚浮的公关话术；
-   - 介绍工具或技术时，陈述其客观原理、优缺点与适用场景。
+   - 本知识库是纯粹的学习与查阅工具，严禁写入任何产品营销套话、吹捧形容词或虚浮的公关话术；
+   - 介绍工具、框架或规范时，始终陈述其客观原理、性能指标、兼容边界与适用场景。
 2. **拒绝无意义的图标堆砌**：
-   - 目录与标题保持纯净整洁，避免在每行每句前滥用 AI 风格的各类 Emoji 图标；
-   - 仅在必要的信息图表、流程图或关键状态提示时使用规范的图形符号。
-3. **结构完整，步骤清晰**：
-   - 理论与代码/公式相结合；
-   - 重要概念提供简明示例与预期输出；
-   - 文末尽量提供原始规范链接（如 W3C RFC、CommonMark 规范、GB 标准）。
+   - 目录与标题保持纯净整洁，避免在每行每句前滥用各类装饰性 Emoji；
+   - 仅在必要的信息图表、流程图或关键状态提示时使用规范的图形与 SVG 矢量图。
+3. **理论推导与工程实践结合**：
+   - 深入底层解析规范与数据流，配合代码片段、数学公式或架构拓扑图；
+   - 文末必须提供可追溯的原始文献与官方标准规范链接（如 W3C、IETF RFC、CommonMark 规范、Unicode 报告）。
 
 ---
 
-## 2. 知识库目录组织与文件血缘链
+## 2. 知识库架构与八大专业领域分类
 
-知识库代码采用模块化解耦架构，存放在 \`projects/darktu-docs\` 目录下：
+知识库采用 Lauren Tan 编译器级 Dune 架构哲学，各领域相互隔离，通过注册表聚合：
 
 \`\`\`
 projects/darktu-docs/
@@ -91,15 +90,15 @@ projects/darktu-docs/
 │   ├── data/
 │   │   ├── navigation.js           # 目录树、Slug 别名与章节注册
 │   │   ├── articlesContent.js      # 全量词条聚合器
-│   │   └── articles/               # 各专业领域的词条源码
-│   │       ├── markdownSpecs.js       # 1. 语法与规范
-│   │       ├── clreqTypography.js     # 2. 中文排版学
-│   │       ├── latexFormulas.js       # 3. 数学公式
-│   │       ├── codeAndMermaid.js      # 4. 代码高亮与图表
-│   │       ├── clipboardEngineering.js# 5. 富文本与剪贴板
-│   │       ├── assetsStorage.js       # 6. 媒体资源与图床
-│   │       ├── technicalWriting.js    # 7. 写作实践与合规
-│   │       └── appendixMaintenance.js # 8. 附录、索引与维护指南
+│   │   └── articles/               # 八大专业领域词条源码（隔离扩展）
+│   │       ├── markdownSpecs.js       # 1. 语法与标准 (CommonMark, GFM, AST, 安全)
+│   │       ├── clreqTypography.js     # 2. 中文排版学 (CLReq, 网格, 盘古之白, 禁则)
+│   │       ├── latexFormulas.js       # 3. 数学公式 (KaTeX, AMS 矩阵, 物理化学)
+│   │       ├── codeAndMermaid.js      # 4. 代码与图表 (Prism, Shiki, Mermaid 建模)
+│   │       ├── clipboardEngineering.js# 5. 富文本剪贴板 (MIME, 行内化, 防剥离)
+│   │       ├── assetsStorage.js       # 6. 媒体与存储 (AVIF/WebP, S3/R2 预签名, 本地优先)
+│   │       ├── technicalWriting.js    # 7. 写作实践与合规 (RFC2119, DFA 词库, WCAG)
+│   │       └── appendixMaintenance.js # 8. 附录与索引 (术语总表, 维护指南)
 │   ├── services/
 │   │   ├── markdownRenderer.js     # Markdown 语法与大纲解析引擎
 │   │   ├── searchService.js        # 全文索引与检索服务
@@ -107,17 +106,51 @@ projects/darktu-docs/
 │   │   └── uiHelpers.js            # 代码复制与大纲追踪交互
 │   └── styles/                     # 经典排版样式表
 └── test/
-    └── docs_integrity.test.js      # 词条内容完整性自动化回归测试
+    ├── verify_dune_architecture.js # Dune 架构公理硬断言 (index.js <= 250 行)
+    └── docs_integrity.test.js      # 词条内容完整性、死链与合规扫描
 \`\`\`
 
 ---
 
-## 3. 如何新增或修改一个词条？
+## 3. 实战项目持续反哺与文献入库机制
 
-如需新增一个词条或对既有内容进行勘误，只需四步即可完成：
+知识库并非孤立的静态手册，而是与整个工程生态紧密相连的活态知识库。在具体项目（如富文本编辑器、图片处理工具、IDE 扩展等）开发与演进过程中，一旦遇到**现有知识库未涵盖或解释不够透彻的专业边界**，必须遵循以下反哺入库流程：
+
+### 3.1 权威文献溯源标准 (Literature Sourcing Hierarchy)
+编写词条时，严禁使用未经证实的二手博客或软文作为依据，必须溯源一手权威技术文献：
+- **Tier-1 国际组织核心标准**：
+  - W3C Recommendations：如 [W3C 中文排版需求要点](#/w3c-clreq)、HTML5 规范、CSS Text Module Level 3；
+  - IETF RFC 规范：如 RFC 2119（规范级别说明）、RFC 2046（MIME 类型定义）、RFC 7946（GeoJSON 规范）；
+  - Unicode Consortium：Unicode 核心规范、UAX #14（断行算法）、UAX #29（文本分词）。
+- **Tier-2 工业级文法与语言基准**：
+  - CommonMark 形式化规范与自动化测试套件；
+  - GitHub Flavored Markdown (GFM) 规范；
+  - KaTeX / MathJax 语法支持矩阵与 AMS-LaTeX 符号标准；
+  - Mermaid.js 官方架构与渲染管道文档。
+- **Tier-3 底层平台与开发者白皮书**：
+  - MDN Web Docs（Mozilla 开发者网络）；
+  - Chromium Blink 与 WebKit 渲染引擎设计白皮书；
+  - ECMA-262 语言规范。
+
+### 3.2 分类决策树 (Taxonomy Routing)
+遇到新课题时，依据以下决策树进行精准分类归档：
+- 涉及纯文本标记、AST 节点抽象、扩展语法解析、XSS 防护 $\\rightarrow$ **1. 语法与标准** (\`markdownSpecs.js\`)；
+- 涉及汉字字身框、行距比率、标点悬挂、中西文混排空隙 $\\rightarrow$ **2. 中文排版学** (\`clreqTypography.js\`)；
+- 涉及数学符号、矩阵行列式、物理化学宏包、公式无障碍 $\\rightarrow$ **3. 数学公式** (\`latexFormulas.js\`)；
+- 涉及代码语法高亮、Token 流分词、Mermaid 流程图/时序图/甘特图 $\\rightarrow$ **4. 代码与图表** (\`codeAndMermaid.js\`)；
+- 涉及 \`navigator.clipboard\`、多 MIME 封包、第三方平台样式隔离与 CSS 行内化 $\\rightarrow$ **5. 富文本剪贴板** (\`clipboardEngineering.js\`)；
+- 涉及现代图片压缩、对象存储临时凭据、本地优先离线同步 $\\rightarrow$ **6. 媒体与存储** (\`assetsStorage.js\`)；
+- 涉及双语撰写风格、敏感词 DFA 状态机匹配、版权授权许可 $\\rightarrow$ **7. 写作实践与合规** (\`technicalWriting.js\`)；
+- 涉及全库通用术语、概念跨度大的缩略词或维护规范 $\\rightarrow$ **8. 附录与索引** (\`appendixMaintenance.js\`)。
+
+---
+
+## 4. 词条入库四步闭环标准
+
+入库编写只需遵循以下四步流程，全程由自动化测试网与 CI/CD 流水线守护：
 
 ### 第一步：编写词条 Markdown 内容
-在 \`src/data/articles/\` 下对应的领域文件中，按规范添加一个以词条 ID 为键的 Markdown 字符串：
+在 \`src/data/articles/\` 下对应的领域文件中，添加以词条 ID 为键的 Markdown 字符串：
 \`\`\`javascript
 export const MY_DOMAIN_ARTICLES = {
   "domain/new-topic": \`# 新词条标题
@@ -126,45 +159,58 @@ export const MY_DOMAIN_ARTICLES = {
 
 ---
 
-## 1. 核心概念与工作原理
-正文解析，配合代码或图表示例...
+## 1. 规范来源与核心概念
+引用相关权威文献（如 RFC 或 W3C 规范），解析其原理...
+
+## 2. 工程实现与代码示例
+提供无虚饰的最小可复现示例代码...
+
+## 3. 参考文献与官方标准
+- 官方规范文档链接
 \`
 };
 \`\`\`
 
 ### 第二步：在 \`src/data/navigation.js\` 中登记目录
-在对应的分类 \`items\` 数组中追加该词条的 Slug 与简介：
+在对应的分类 \`items\` 数组中追加该词条的 Slug、标题与简介：
 \`\`\`javascript
 {
   id: "domain/new-topic",
   slug: "new-topic",
   title: "新词条显示名称",
-  description: "简明扼要的一句话摘要，供搜索和卡片展示。",
+  description: "简明扼要的一句话摘要，供全库搜索和卡片展示。",
 }
 \`\`\`
 
-### 第三步：运行本地自动化校验测试
+### 第三步：运行本地自动化回归测试
 在项目目录下执行：
 \`\`\`bash
 npm test
 \`\`\`
-自动化测试套件（\`docs_integrity.test.js\`）会自动扫描全库所有词条，断言：
-- 每一个词条的内容均真实有效且具有实质篇幅（> 200 字）；
-- 不存在任何未完成的待办项或临时占位文本；
-- 全文搜索索引与别名跳转正常。
+自动化测试套件（包含 \`verify_dune_architecture.js\` 与 \`docs_integrity.test.js\`）会自动执行以下硬断言：
+1. **Dune 架构公理**：主入口模块（\`src/index.js\`）代码行数 $\\le 250$ 行，所有异步捕获均窄化且显式；
+2. **实质内容校验**：每一个词条的内容真实有效且字数 $> 200$ 字；
+3. **占位符零容忍**：严禁遗留任何未完成的草稿占位标记；
+4. **语言纯洁性**：严禁包含商业吹捧营销词汇；
+5. **维基内链连通性**：全库所有条目内链（\`#/{slug}\`）100% 存在且可解析。
 
-### 第四步：编译并部署
-通过 Vite 编译并推送发布：
+### 第四步：推送 Git 触发全自动构建发布
+通过 Git 提交代码并推送到 GitHub 仓库主干：
 \`\`\`bash
-npm run build
-npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
+git add -A
+git commit -m "docs: add comprehensive chapter on <topic>"
+git push origin main
 \`\`\`
+Cloudflare Pages 已与 GitHub 仓库打通自动化 CI/CD 管道：
+- 监测到 \`main\` 分支变动后自动启动云端容器；
+- 执行 \`npm run build\` 进行 Vite 高性能生产编译；
+- 全球 Anycast 边缘节点秒级完成部署与生效（正式域名：\`https://docs.darktu.com\`）。
 
 ---
 
-## 4. 社区协同与勘误渠道
+## 5. 社区协同与勘误渠道
 
-知识库源代码托管于 GitHub。欢迎每位读者对发现的错别字、陈旧规范或不准确描述提出改进：
+知识库源代码完全开源并托管于 GitHub。欢迎每位读者对发现的错别字、陈旧规范或不准确描述提出改进：
 - **提交 Issue / 勘误建议**：[GitHub Issues 页面](https://github.com/DF-Guan/darktu-docs/issues)
 - **提交 Pull Request 参与编辑**：[GitHub 仓库主页](https://github.com/DF-Guan/darktu-docs)
 - **文档使用许可**：采用 **知识共享 署名-非商业性使用-相同方式共享 4.0 国际许可协议 (CC BY-NC-SA 4.0)**，支持自由学习与非商业传播。
