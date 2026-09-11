@@ -1,6 +1,6 @@
 {
   "name": "darktu-docs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Darktu 官方知识库 - 专为创作者打造的极客文档中心 (docs.darktu.com)",
   "type": "module",
   "scripts": {

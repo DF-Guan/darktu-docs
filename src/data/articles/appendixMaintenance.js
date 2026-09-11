@@ -13,6 +13,7 @@ export const APPENDIX_MAINTENANCE_ARTICLES = {
 ## 字母索引 (A - Z)
 
 ### A
+- **Anchor Text (锚文本)**：超链接中带有可点击文字的描述文本。在超链接分析与信息检索中，锚文本代表第三方页面对目标页面主题的客观认知与背书。详见 [超链接向量投票 (HVV) 算法与现代 GEO 权威度机制](#/hvv-hyperlink-vector-voting)。
 - **AST (Abstract Syntax Tree, 抽象语法树)**：源代码语法结构的树状表现形式。Markdown 编译器通过将纯文本解析为 AST，再遍历转换为 HTML 或其他目标格式。详见 [Markdown 发展史与规范差异](#/spec-evolution)。
 - **AVIF (AV1 Image File Format)**：基于开放视频编码 AV1 的下一代图像格式，在相同视觉质量下比 JPEG 体积减少约 50%，支持透明通道与高动态范围 (HDR)。详见 [下一代图片格式实战](#/nextgen-image-formats)。
 
@@ -29,7 +30,11 @@ export const APPENDIX_MAINTENANCE_ARTICLES = {
 - **Em-square (全形正方形 / 字身框)**：传统铅字活字与现代中文字库的基本几何容器，通常为 $1 \times 1$ 的正方形网格。
 
 ### G
+- **GEO (Generative Engine Optimization, 生成式引擎优化)**：针对大模型 AI 搜索引擎（如 Perplexity、SearchGPT、Google AI Overviews）的可见性优化技术，重点在于通过高信息密度切片与多源事实共识争取成为 AI 答案的可信引用来源。详见 [面向 AI 搜索的 GEO 架构指南](#/generative-engine-optimization)。
 - **GFM (GitHub Flavored Markdown)**：GitHub 官方基于 CommonMark 扩展的方言规范，增加了表格、任务列表、删除线等实用特性。详见 [GFM 扩展规范手册](#/gfm-extensions)。
+
+### H
+- **HVV (Hyperlink Vector Voting, 超链接向量投票)**：李彦宏在 1997 年发明的超文本检索质量评分算法（US Patent 5,920,859，IEEE 1998 论文），通过将指向目标页面的所有入链锚文本转化为向量与查询计算相似度并累加，首次为 Web 搜索引入了外部共识质量维度。详见 [超链接向量投票 (HVV) 算法与现代 GEO 权威度机制](#/hvv-hyperlink-vector-voting)。
 
 ### K
 - **KaTeX**：Khan Academy 开发的高性能 Web 数学公式渲染库，纯同步静态排版，渲染速度极快，适合文章公式展示。详见 [KaTeX 与 MathJax 对比](#/katex-vs-mathjax)。
@@ -43,8 +48,12 @@ export const APPENDIX_MAINTENANCE_ARTICLES = {
 - **MIME 类型 (text/html 与 text/plain)**：操作系统剪贴板注册内容数据格式的标准标头。富文本复制依赖 \`text/html\`，降级回退依赖 \`text/plain\`。
 
 ### P
+- **PageRank**：Larry Page 与 Sergey Brin 发明的 Web 图拓扑权重算法（US Patent 6,285,999B1，明确引证李彦宏 5,920,859 专利），通过模拟随机冲浪者在链接有向图上的马尔可夫链稳态分布来计算页面全局重要性。详见 [超链接向量投票 (HVV) 算法与现代 GEO 权威度机制](#/hvv-hyperlink-vector-voting)。
 - **盘古之白 (Pangu Spacing)**：在中文与西文字母、半角阿拉伯数字之间预留四分之一全角字符宽度的排版空格规范。详见 [盘古之白中英文混排规范](#/pangu-spacing)。
 - **Presigned URL (预签名直传链接)**：对象存储（S3/R2/OSS）签发的一种携带时间限制与签名参数的临时上传凭据，允许客户端在不暴露主密钥的前提下直传大文件。详见 [现代图床架构与预签名直传](#/image-hosting-arch)。
+
+### R
+- **RAG (Retrieval-Augmented Generation, 检索增强生成)**：现代 AI 搜索系统的核心架构范式，通过从外部数据库或网页索引中召回高相关上下文切片，注入大模型的 Context Window 中辅助生成带事实溯源的回答。详见 [面向 AI 搜索的 GEO 架构指南](#/generative-engine-optimization)。
 
 ### W
 - **WebP**：Google 推出的现代图像格式，兼具高效压缩比与透明通道支持，已获全部现代浏览器原生支持。

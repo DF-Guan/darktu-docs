@@ -9,12 +9,12 @@
 
 ### 1. 核心知识库百科渲染与大纲引擎 (`src/index.js`, `src/services/markdownRenderer.js`)
 * **User POV (用户入口)**:
-  - 访问 `https://docs.darktu.com`，点击左侧 8 大分类导航或通过 URL Hash (`#/overview`, `#/syntax`, `#/frontmatter-and-metadata` 等) 切换 38 篇词条；
+  - 访问 `https://docs.darktu.com`，点击左侧 9 大分类导航或通过 URL Hash (`#/overview`, `#/syntax`, `#/hvv-hyperlink-vector-voting`, `#/generative-engine-optimization` 等) 切换 40 篇词条；
   - 页面即时呈现元数据信息头（预计阅读时间、字数、修订年月）、右侧 TOC 目录与底栏上一篇/下一篇卡片。
 * **Agent Drive (机器驱动 API)**:
   - `DarktuDocsApp.handleRoute()`, `renderMarkdown(markdown)`, `getDocBySlugOrId(slug)`.
 * **Observable State (物理可观测证明状态)**:
-  - `npm test` 中 `test/docs_integrity.test.js` 断言 38 篇词条 100% 存在、无占位符、无空内链且字数 > 200。
+  - `npm test` 中 `test/docs_integrity.test.js` 断言 40 篇词条 100% 存在、无占位符、无空内链且字数 > 200。
 
 ### 2. 维基百科式条目内链悬浮即时预览 (`src/services/wikilinkPreview.js`)
 * **User POV (用户入口)**:

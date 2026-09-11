@@ -272,8 +272,29 @@ export const DOCS_NAVIGATION = [
     ],
   },
   {
+    id: "search-geo",
+    title: "8. 检索工程与 GEO",
+    badge: "2 篇",
+    items: [
+      {
+        id: "search-geo/hvv-hyperlink-vector-voting",
+        slug: "hvv-hyperlink-vector-voting",
+        aliasSlugs: ["hvv", "hyperlink-vector-voting"],
+        title: "超链接向量投票 (HVV) 与权威度机制",
+        description: "李彦宏 1998 经典论文考证、HVV 算法数学模型、PageRank 渊源与现代 GEO 外链共识机制。",
+      },
+      {
+        id: "search-geo/generative-engine-optimization",
+        slug: "generative-engine-optimization",
+        aliasSlugs: ["geo", "ai-search-geo"],
+        title: "面向 AI 搜索的 GEO 架构指南",
+        description: "AI 搜索双阶段 RAG 链路、大模型抗幻觉引用机制、信息增益与官网可信度优化。",
+      },
+    ],
+  },
+  {
     id: "appendix",
-    title: "8. 术语索引与维护",
+    title: "9. 术语索引与维护",
     badge: "2 篇",
     items: [
       {

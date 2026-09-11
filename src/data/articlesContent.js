@@ -10,6 +10,7 @@ import { CODE_AND_MERMAID_ARTICLES } from "./articles/codeAndMermaid.js";
 import { CLIPBOARD_ENGINEERING_ARTICLES } from "./articles/clipboardEngineering.js";
 import { ASSETS_STORAGE_ARTICLES } from "./articles/assetsStorage.js";
 import { TECHNICAL_WRITING_ARTICLES } from "./articles/technicalWriting.js";
+import { SEARCH_AND_GEO_ARTICLES } from "./articles/searchAndGeo.js";
 import { APPENDIX_MAINTENANCE_ARTICLES } from "./articles/appendixMaintenance.js";
 
 export const ARTICLES_CONTENT = {
@@ -20,6 +21,7 @@ export const ARTICLES_CONTENT = {
   ...CLIPBOARD_ENGINEERING_ARTICLES,
   ...ASSETS_STORAGE_ARTICLES,
   ...TECHNICAL_WRITING_ARTICLES,
+  ...SEARCH_AND_GEO_ARTICLES,
   ...APPENDIX_MAINTENANCE_ARTICLES,
 };
 
