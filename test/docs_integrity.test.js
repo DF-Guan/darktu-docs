@@ -31,23 +31,49 @@ async function runTests() {
     // 验证渲染
     const { html } = renderMarkdown(content);
     assert(html && html.includes("<h1"), `Article ${doc.id} must render an H1 heading`);
+
+    // 验证谦逊求真语气与学习导向：严禁商业吹捧套话
+    const forbiddenBuzzwords = ["行业通用标准", "行业权威", "大厂权威", "业界第一"];
+    forbiddenBuzzwords.forEach((kw) => {
+      assert(!content.includes(kw), `Article ${doc.id} must not contain boastful buzzword: "${kw}"`);
+    });
   });
 
-  // 3. 验证快捷别名 slug (特别是 we-markdown 跳转的 #/syntax)
+  // 3. 验证维基式条目内链 (Wikilinks) 100% 连通无死链
+  const allSlugs = new Set();
+  ALL_DOCS.forEach((d) => {
+    allSlugs.add(d.slug);
+    if (d.aliasSlugs) d.aliasSlugs.forEach((a) => allSlugs.add(a));
+  });
+
+  ALL_DOCS.forEach((d) => {
+    const md = getArticleMarkdown(d.id);
+    const regex = /\(#\/([a-zA-Z0-9_-]+)\)/g;
+    let match;
+    while ((match = regex.exec(md)) !== null) {
+      const targetSlug = match[1];
+      assert(
+        allSlugs.has(targetSlug),
+        `Broken internal wikilink in [${d.id}]: #/${targetSlug} does not exist in navigation!`
+      );
+    }
+  });
+
+  // 4. 验证快捷别名 slug (特别是 we-markdown 跳转的 #/syntax)
   const syntaxDoc = getDocBySlugOrId("#/syntax");
   assert(syntaxDoc && syntaxDoc.doc && syntaxDoc.doc.slug === "syntax", "Slug #/syntax must resolve to basic syntax doc");
 
-  // 4. 验证搜索功能
+  // 5. 验证搜索功能
   const searchResults = searchKnowledgeBase("微信");
   assert(searchResults.length > 0, "Search for '微信' must return matching articles");
   const aiResults = searchKnowledgeBase("副驾驶");
   assert(aiResults.length > 0, "Search for '副驾驶' must return matching articles");
 
-  // 5. 验证静态资源（Logo 等）物理存在
+  // 6. 验证静态资源（Logo 等）物理存在
   const logoPath = path.resolve(__dirname, "../public/logo-128.png");
   assert(fs.existsSync(logoPath), "logo-128.png must physically exist in public/");
 
-  console.log(`✅ All ${ALL_DOCS.length} Knowledge Base Articles and Functions 100% Verified!`);
+  console.log(`✅ All ${ALL_DOCS.length} Knowledge Base Articles, Wikilinks, and Functions 100% Verified!`);
   process.exit(0);
 }
 

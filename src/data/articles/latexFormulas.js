@@ -1,6 +1,6 @@
 /**
  * 篇章三：数学公式与科学学术排版 (latexFormulas.js)
- * 行业权威规范：LaTeX 核心语法, KaTeX vs MathJax, 矩阵多行方程, 科学符号表
+ * 数学公式学习指南：LaTeX 核心语法, KaTeX vs MathJax, 矩阵多行方程, 科学符号表
  */
 
 export const LATEX_FORMULAS_ARTICLES = {

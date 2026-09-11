@@ -1,6 +1,6 @@
 /**
  * 篇章四：现代图表与代码可视化工程 (codeAndMermaid.js)
- * 行业权威规范：Prism/Shiki 高亮机制, Mermaid 流程图/时序图/ER/Git拓扑全家桶
+ * 代码与图表学习指南：Prism/Shiki 高亮机制, Mermaid 流程图/时序图/ER/Git拓扑全家桶
  */
 
 export const CODE_AND_MERMAID_ARTICLES = {

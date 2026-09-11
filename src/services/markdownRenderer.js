@@ -63,7 +63,8 @@ function renderInline(text) {
   // 9. 超链接 [text](url)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, label, url) => {
     const isExternal = url.startsWith("http");
-    return `<a href="${url}" ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`;
+    const isWiki = url.startsWith("#/");
+    return `<a href="${url}" class="${isWiki ? "wikilink" : ""}" ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`;
   });
 
   return html;
@@ -198,7 +199,8 @@ export function renderMarkdown(markdown) {
         i++;
         quoteLines.push(lines[i].replace(/^>\s?/, ""));
       }
-      output.push(`<blockquote><p>${renderInline(quoteLines.join("<br/>"))}</p></blockquote>`);
+      const isLead = toc.length === 0 && output.length <= 2;
+      output.push(`<blockquote class="${isLead ? "docs-lead-abstract" : ""}"><p>${renderInline(quoteLines.join("<br/>"))}</p></blockquote>`);
       continue;
     }
 
@@ -292,22 +294,28 @@ function renderTableBlock(rows) {
 
 function getCalloutIcon(type) {
   switch (type) {
-    case "NOTE": return "ℹ️";
-    case "TIP": return "💡";
-    case "IMPORTANT": return "📌";
-    case "WARNING": return "⚠️";
-    case "CAUTION": return "🛑";
-    default: return "ℹ️";
+    case "NOTE":
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+    case "TIP":
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 7a5 5 0 0 1 5 5c0 2-1 3-2 4H9c-1-1-2-2-2-4a5 5 0 0 1 5-5z"/></svg>';
+    case "IMPORTANT":
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    case "WARNING":
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    case "CAUTION":
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+    default:
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
   }
 }
 
 function getCalloutTitle(type) {
   switch (type) {
-    case "NOTE": return "提示 (Note)";
-    case "TIP": return "技巧 (Tip)";
-    case "IMPORTANT": return "重要 (Important)";
-    case "WARNING": return "警告 (Warning)";
-    case "CAUTION": return "避坑警示 (Caution)";
-    default: return "提示";
+    case "NOTE": return "说明";
+    case "TIP": return "技巧";
+    case "IMPORTANT": return "关键";
+    case "WARNING": return "注意";
+    case "CAUTION": return "警示";
+    default: return "说明";
   }
 }

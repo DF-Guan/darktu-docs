@@ -25,7 +25,7 @@ Gruber 的初代实现 \`Markdown.pl\` 仅是一份不到 1,000 行的 Perl 正�
 
 | 规范名称 | 发起机构/主导者 | 核心定位 | 核心特性 | 现代代表解析器 |
 | :--- | :--- | :--- | :--- | :--- |
-| **CommonMark** | Jeff Atwood, John MacFarlane 等 | 业界唯一严格的形式化数学规范 | 消除所有二义性、600+ 规范用例套件、AST 明确映射 | \`cmark\` (C), \`markdown-it\` (JS) |
+| **CommonMark** | Jeff Atwood, John MacFarlane 等 | 严格的形式化数学规范 | 消除所有二义性、600+ 规范用例套件、AST 明确映射 | \`cmark\` (C), \`markdown-it\` (JS) |
 | **GFM (GitHub Flavored)** | GitHub 官方 | 基于 CommonMark 的开发者扩展集 | 扩展表格、任务列表、删除线、自动链接、Emoji | \`cmark-gfm\`, \`comrak\` (Rust) |
 | **Markdown Extra** | Michel Fortin | PHP 社区经典扩展 | 脚注 (Footnotes)、定义列表、代码块自定义属性 | \`php-markdown\`, \`Python-Markdown\` |
 | **Pandoc Markdown** | John MacFarlane | 学术界与出版界全能通用中间语言 | 超全数学公式、文献引用、多列排版、元数据 YAML | \`pandoc\` (Haskell) |
@@ -57,7 +57,7 @@ flowchart LR
 - **绝不使用无规范支撑的玩具解析器**；
 - 优先选择通过 **CommonMark 0.31+ 兼容性认证**的引擎；
 - 涉及微信公众平台、知乎专栏等富文本剪贴板生态时，必须在 AST 输出阶段集成 **CSS 行内化 (Inliner)** 与 **HTML 安全沙箱清洗 (Sanitizer)**。
-`,"markdown-specs/commonmark-core":"# CommonMark 核心规范与语法深度解析\n\n> 本文以 CommonMark 0.31.2 官方规范为基准，详细阐述 Markdown 基础语法的严格语义边界、定界符栈机制与边缘解析场景。\n\n---\n\n## 1. 标题语法 (Headings) 与 Setext 规范\n\n### 1.1 ATX 标题（推荐标准）\n使用 `#` 作为前缀，支持 1 至 6 级标题。\n\n```markdown\n# 一级主标题 (Title 1)\n## 二级章节标题 (Title 2)\n### 三级小节标题 (Title 3)\n#### 四级标题 (Title 4)\n##### 五级标题 (Title 5)\n###### 六级标题 (Title 6)\n```\n\n> [!IMPORTANT]\n> **规范红线**：根据 CommonMark 规范，`#` 与后续正文之间**必须包含至少一个空格**（例如 `# 标题` 合法，而 `#标题` 在标准解析器中将被作为普通段落文本对待）。末尾可选对称的 `#` 关闭符号。\n\n### 1.2 Setext 标题（底线下划线风格）\n在文本下一行使用 `=` 或 `-` 标记，仅支持一、二级标题：\n```markdown\n这是一级标题\n=============\n\n这是二级标题\n-------------\n```\n\n---\n\n## 2. 强调与加粗的定界符算法 (Emphasis and Strong Emphasis)\n\nMarkdown 支持使用星号 `*` 或下划线 `_` 表达语义强调。在 CommonMark 中，强调不是简单的匹配，而是严格基于 **定界符游程 (Delimiter Run)** 算法：\n\n| 语法书写 | 渲染效果 | HTML 语义标签 | 规范规则 |\n| :--- | :--- | :--- | :--- |\n| `*斜体强调*` 或 `_斜体强调_` | *斜体强调* | `<em>斜体强调</em>` | 单定界符左右匹配 |\n| `**粗体强调**` 或 `__粗体强调__` | **粗体强调** | `<strong>粗体强调</strong>` | 双定界符左右匹配 |\n| `***粗斜体结合***` | ***粗斜体结合*** | `<strong><em>粗斜体</em></strong>` | 三定界符嵌套 |\n\n> [!TIP]\n> **中英文混排避坑指南**：在中文排版中，推荐统一使用星号 `*文字*` 与 `**文字**`。下划线 `_` 在 CommonMark 中包含“词内强调限制（Intraword Emphasis Restriction）”，下划线与中文字符相邻时可能判定为单词内部连接符导致加粗失效。\n\n---\n\n## 3. 列表体系：松散列表 (Loose) 与紧凑列表 (Tight)\n\n### 3.1 无序列表与有序列表\n```markdown\n- 无序列表项 A\n- 无序列表项 B\n  - 二级缩进列表（缩进 2 个或 4 个空格）\n  - 二级缩进列表项\n\n1. 有序项第一点（数字无需连续，解析器将自动重新编号）\n2. 有序项第二点\n3. 有序项第三点\n```\n\n### 3.2 列表的核心区别：松散 (Loose) vs 紧凑 (Tight)\n这是 Markdown 最常令人困惑的特性：\n- **紧凑列表 (Tight List)**：列表项之间没有空行。HTML 输出为纯 `<li>文本</li>`，无段落标签，上下行距紧凑；\n- **松散列表 (Loose List)**：只要列表中**任何两个项之间存在空行**，整个列表自动升格为松散列表，每个列表项包裹 `<p>` 标签：\n  ```html\n  <li><p>列表项内容</p></li>\n  ```\n  在自媒体或网页排版中会导致列表项间隙剧增。\n\n---\n\n## 4. 区块引用 (Blockquotes) 嵌套与惰性延续 (Lazy Continuation)\n\n区块引用通过行首 `>` 声明，支持任意深度嵌套与多块混合：\n\n```markdown\n> 这是第一层区块引用。\n>\n> > 这是嵌套在内部的二级引用，包含专业术语解释。\n>\n> 引用内可以直接编写列表与代码：\n> - 引用中的列表项 1\n> - 引用中的列表项 2\n```\n\n---\n\n## 5. 代码展示：行内代码与围栏代码块 (Fenced Code Blocks)\n\n### 5.1 行内代码 (Inline Code)\n使用单反引号 `` `code` `` 包裹。若代码内部本身包含反引号，可以使用双反引号包裹：\n```markdown\n在文本中提到 `const status = true;` 变量。\n如果要显示反引号自身：`` `code` ``\n```\n\n### 5.2 围栏代码块 (Fenced Code Blocks)\n使用 3 个以上的反引号 ``` 或波浪号 `````` 包裹，首行提供语言信息字符串（Info String）：\n```typescript\ninterface UserProfile {\n  id: string;\n  name: string;\n  role: 'admin' | 'creator';\n}\n```\n","markdown-specs/gfm-extensions":'# GitHub Flavored Markdown (GFM) 扩展规范手册\n\n> GFM 是当今开源界与商业开发者软件事实上的第一标准。本文系统梳理 GFM 在 CommonMark 基础之上引入的核心扩展。\n\n---\n\n## 1. 结构化表格语法 (Tables)\n\nGFM 表格通过管道符 `|` 与连字符 `-` 组织，第二行必须是表头分隔线，并支持通过冒号 `:` 声明对齐属性：\n\n```markdown\n| 参数名称 (Name) | 类型 (Type) | 默认值 (Default) | 字段语义描述 |\n| :--- | :---: | ---: | :--- |\n| **apiKey** | `string` | `null` | 调用开放平台的鉴权令牌 |\n| **timeout** | `number` | `5000` | 客户端 HTTP 超时等待阈值 (ms) |\n| **autoRetry**| `boolean`| `true` | 网络抖动时是否自动触发指数退避 |\n```\n\n### 对齐规则解析：\n- `:---`：文本左对齐（默认文本规范）；\n- `:---:`：居中对齐（常用于状态、枚举、布尔值）；\n- `---:`：右对齐（常用于数值、价格、耗时等统计指标）。\n\n---\n\n## 2. 任务列表 (Task Lists / Checklist)\n\n任务列表在无序列表的基础之上引入复选框语义：\n\n```markdown\n- [x] 完成 CommonMark 语法解析器内核基线重构\n- [x] 部署 Cloudflare Pages 独立二级域名 docs.darktu.com\n- [ ] 编写微信公众号排版引擎富文本沙箱白名单白皮书\n- [ ] 实施全库 LaTeX 数学公式 KaTeX 高清渲染回归测试\n```\n\n### 语义化 HTML 输出：\nGFM 规范要求将任务列表渲染为不可点击或只读的勾选框元素，并附带专属属性：\n```html\n<ul>\n  <li><input type="checkbox" checked disabled> 完成 CommonMark 语法解析器内核基线重构</li>\n  <li><input type="checkbox" disabled> 编写微信公众号排版引擎富文本沙箱白名单白皮书</li>\n</ul>\n```\n\n---\n\n## 3. 删除线语法 (Strikethrough)\n\n使用双波浪号 `~~` 包裹需要废弃或删除的文本，在 HTML 中对应 `<del>` 语义标签：\n\n```markdown\n~~旧版本 API `fetchDataLegacy()` 已正式废弃~~，请迁移至全新异步流式接口 `useDataStream()`.\n```\n渲染呈现：~~旧版本 API fetchDataLegacy() 已正式废弃~~，请迁移至全新异步流式接口 useDataStream().\n\n---\n\n## 4. 自动超链接拓展 (Autolinks Extension)\n\n在标准 CommonMark 中，超链接必须写为 `<https://example.com>` 或 `[文本](https://example.com)`。而在 GFM 扩展中，以下合规协议的裸文本 URL 会自动转为可点击的超链接：\n- `https://darktu.com` -> 自动识别为 `<a href="https://darktu.com">https://darktu.com</a>`\n- `mailto:support@darktu.com` -> 自动识别为邮件点击\n- `www.github.com` -> 带有 `www.` 前缀的域名自动补全 `http://` 协议并链接。\n',"markdown-specs/advanced-markdown":'# Markdown 高级排版特性与 HTML5 嵌入规范\n\n> 当标准语法无法满足学术专著、复杂书籍或精细化排版需求时，Markdown 社区制定了脚注、元数据定义与 HTML5 混合渲染的行业准则。\n\n---\n\n## 1. 学术脚注语法 (Footnotes)\n\n脚注在学术论文、深度研究特稿中是不可或缺的参考文献与注释工具：\n\n```markdown\n现代编译器前端架构[^1]通过多遍 AST 遍历实现代码优化，根据最新的 W3C 标准建议[^w3c]，排版时应保持字符边界清晰。\n\n[^1]: Aho, Alfred V., et al. "Compilers: Principles, Techniques, and Tools." Addison-Wesley, 2006.\n[^w3c]: W3C 中文排版需求标准 (CLReq), 2024 年修订版.\n```\n\n### 渲染行为与跳转机制：\n1. 正文中引用位置自动生成上标锚点超链接 `<sup><a href="#fn-1">[1]</a></sup>`；\n2. 文章最底部自动汇编所有脚注列表，并生成带反向回溯链接（Backlink `↩`) 的脚注容器。\n\n---\n\n## 2. 嵌入原生 HTML5：安全子集与消毒机制 (Sanitization)\n\nMarkdown 原生设计允许混入 HTML 标签。然而在多用户或自媒体系统中，任意 HTML 会带来严重的 XSS 跨站脚本攻击或破坏页面 DOM 树。\n\n### 2.1 业界通用白名单标签集\n| 允许保留的 HTML 标签 | 典型应用场景 | 属性限制规则 |\n| :--- | :--- | :--- |\n| `<u>`, `<mark>` | 下划线强调、高亮背景文字 | 仅允许样式类或安全 inline-style |\n| `<sub>`, `<sup>` | 化学分子式（H~2~O）、代数平方（X^2^） | 禁止包含脚本属性 |\n| `<kbd>` | 键盘按键提示，如 `<kbd>Ctrl</kbd> + <kbd>C</kbd>` | 纯行内元素 |\n| `<details>`, `<summary>` | 原生折叠内容面板，常用于答案、补充代码 | `open` 属性可选 |\n\n### 2.2 必须机械剥离的高危标签黑名单\n必须通过 HTML Sanitizer 自动剔除以下标签与属性：\n- ❌ `<script>`, `<iframe>`, `<object>`, `<embed>`：杜绝外部脚本注入；\n- ❌ `onclick`, `onerror`, `onload` 等一切 `on*` 事件监听器；\n- ❌ 带有 `javascript:` 伪协议的 `<a href="...">` 链接。\n',"markdown-specs/callouts-spec":`# 现代 Callout / Admonition 提示块标准化指南
+`,"markdown-specs/commonmark-core":"# CommonMark 核心规范与语法深度解析\n\n> 本文以 CommonMark 0.31.2 官方规范为基准，详细阐述 Markdown 基础语法的严格语义边界、定界符栈机制与边缘解析场景。\n\n---\n\n## 1. 标题语法 (Headings) 与 Setext 规范\n\n### 1.1 ATX 标题（推荐标准）\n使用 `#` 作为前缀，支持 1 至 6 级标题。\n\n```markdown\n# 一级主标题 (Title 1)\n## 二级章节标题 (Title 2)\n### 三级小节标题 (Title 3)\n#### 四级标题 (Title 4)\n##### 五级标题 (Title 5)\n###### 六级标题 (Title 6)\n```\n\n> [!IMPORTANT]\n> **规范红线**：根据 CommonMark 规范，`#` 与后续正文之间**必须包含至少一个空格**（例如 `# 标题` 合法，而 `#标题` 在标准解析器中将被作为普通段落文本对待）。末尾可选对称的 `#` 关闭符号。\n\n### 1.2 Setext 标题（底线下划线风格）\n在文本下一行使用 `=` 或 `-` 标记，仅支持一、二级标题：\n```markdown\n这是一级标题\n=============\n\n这是二级标题\n-------------\n```\n\n---\n\n## 2. 强调与加粗的定界符算法 (Emphasis and Strong Emphasis)\n\nMarkdown 支持使用星号 `*` 或下划线 `_` 表达语义强调。在 CommonMark 中，强调不是简单的匹配，而是严格基于 **定界符游程 (Delimiter Run)** 算法：\n\n| 语法书写 | 渲染效果 | HTML 语义标签 | 规范规则 |\n| :--- | :--- | :--- | :--- |\n| `*斜体强调*` 或 `_斜体强调_` | *斜体强调* | `<em>斜体强调</em>` | 单定界符左右匹配 |\n| `**粗体强调**` 或 `__粗体强调__` | **粗体强调** | `<strong>粗体强调</strong>` | 双定界符左右匹配 |\n| `***粗斜体结合***` | ***粗斜体结合*** | `<strong><em>粗斜体</em></strong>` | 三定界符嵌套 |\n\n> [!TIP]\n> **中英文混排避坑指南**：在中文排版中，推荐统一使用星号 `*文字*` 与 `**文字**`。下划线 `_` 在 CommonMark 中包含“词内强调限制（Intraword Emphasis Restriction）”，下划线与中文字符相邻时可能判定为单词内部连接符导致加粗失效。\n\n---\n\n## 3. 列表体系：松散列表 (Loose) 与紧凑列表 (Tight)\n\n### 3.1 无序列表与有序列表\n```markdown\n- 无序列表项 A\n- 无序列表项 B\n  - 二级缩进列表（缩进 2 个或 4 个空格）\n  - 二级缩进列表项\n\n1. 有序项第一点（数字无需连续，解析器将自动重新编号）\n2. 有序项第二点\n3. 有序项第三点\n```\n\n### 3.2 列表的核心区别：松散 (Loose) vs 紧凑 (Tight)\n这是 Markdown 最常令人困惑的特性：\n- **紧凑列表 (Tight List)**：列表项之间没有空行。HTML 输出为纯 `<li>文本</li>`，无段落标签，上下行距紧凑；\n- **松散列表 (Loose List)**：只要列表中**任何两个项之间存在空行**，整个列表自动升格为松散列表，每个列表项包裹 `<p>` 标签：\n  ```html\n  <li><p>列表项内容</p></li>\n  ```\n  在自媒体或网页排版中会导致列表项间隙剧增。\n\n---\n\n## 4. 区块引用 (Blockquotes) 嵌套与惰性延续 (Lazy Continuation)\n\n区块引用通过行首 `>` 声明，支持任意深度嵌套与多块混合：\n\n```markdown\n> 这是第一层区块引用。\n>\n> > 这是嵌套在内部的二级引用，包含专业术语解释。\n>\n> 引用内可以直接编写列表与代码：\n> - 引用中的列表项 1\n> - 引用中的列表项 2\n```\n\n---\n\n## 5. 代码展示：行内代码与围栏代码块 (Fenced Code Blocks)\n\n### 5.1 行内代码 (Inline Code)\n使用单反引号 `` `code` `` 包裹。若代码内部本身包含反引号，可以使用双反引号包裹：\n```markdown\n在文本中提到 `const status = true;` 变量。\n如果要显示反引号自身：`` `code` ``\n```\n\n### 5.2 围栏代码块 (Fenced Code Blocks)\n使用 3 个以上的反引号 ``` 或波浪号 `````` 包裹，首行提供语言信息字符串（Info String）：\n```typescript\ninterface UserProfile {\n  id: string;\n  name: string;\n  role: 'admin' | 'creator';\n}\n```\n","markdown-specs/gfm-extensions":'# GitHub Flavored Markdown (GFM) 扩展规范手册\n\n> GFM 是开源社区与开发者工具中广泛采用的扩展规范。本文系统梳理 GFM 在 [CommonMark 核心规范](#/syntax) 基础之上引入的核心扩展。\n\n---\n\n## 1. 结构化表格语法 (Tables)\n\nGFM 表格通过管道符 `|` 与连字符 `-` 组织，第二行必须是表头分隔线，并支持通过冒号 `:` 声明对齐属性：\n\n```markdown\n| 参数名称 (Name) | 类型 (Type) | 默认值 (Default) | 字段语义描述 |\n| :--- | :---: | ---: | :--- |\n| **apiKey** | `string` | `null` | 调用开放平台的鉴权令牌 |\n| **timeout** | `number` | `5000` | 客户端 HTTP 超时等待阈值 (ms) |\n| **autoRetry**| `boolean`| `true` | 网络抖动时是否自动触发指数退避 |\n```\n\n### 对齐规则解析：\n- `:---`：文本左对齐（默认文本规范）；\n- `:---:`：居中对齐（常用于状态、枚举、布尔值）；\n- `---:`：右对齐（常用于数值、价格、耗时等统计指标）。\n\n---\n\n## 2. 任务列表 (Task Lists / Checklist)\n\n任务列表在无序列表的基础之上引入复选框语义：\n\n```markdown\n- [x] 完成 CommonMark 语法解析器内核基线重构\n- [x] 部署 Cloudflare Pages 独立二级域名 docs.darktu.com\n- [ ] 编写微信公众号排版引擎富文本沙箱白名单白皮书\n- [ ] 实施全库 LaTeX 数学公式 KaTeX 高清渲染回归测试\n```\n\n### 语义化 HTML 输出：\nGFM 规范要求将任务列表渲染为不可点击或只读的勾选框元素，并附带专属属性：\n```html\n<ul>\n  <li><input type="checkbox" checked disabled> 完成 CommonMark 语法解析器内核基线重构</li>\n  <li><input type="checkbox" disabled> 编写微信公众号排版引擎富文本沙箱白名单白皮书</li>\n</ul>\n```\n\n---\n\n## 3. 删除线语法 (Strikethrough)\n\n使用双波浪号 `~~` 包裹需要废弃或删除的文本，在 HTML 中对应 `<del>` 语义标签：\n\n```markdown\n~~旧版本 API `fetchDataLegacy()` 已正式废弃~~，请迁移至全新异步流式接口 `useDataStream()`.\n```\n渲染呈现：~~旧版本 API fetchDataLegacy() 已正式废弃~~，请迁移至全新异步流式接口 useDataStream().\n\n---\n\n## 4. 自动超链接拓展 (Autolinks Extension)\n\n在标准 CommonMark 中，超链接必须写为 `<https://example.com>` 或 `[文本](https://example.com)`。而在 GFM 扩展中，以下合规协议的裸文本 URL 会自动转为可点击的超链接：\n- `https://darktu.com` -> 自动识别为 `<a href="https://darktu.com">https://darktu.com</a>`\n- `mailto:support@darktu.com` -> 自动识别为邮件点击\n- `www.github.com` -> 带有 `www.` 前缀的域名自动补全 `http://` 协议并链接。\n',"markdown-specs/advanced-markdown":'# Markdown 高级排版特性与 HTML5 嵌入规范\n\n> 当标准语法无法满足学术专著、复杂书籍或精细化排版需求时，Markdown 社区逐渐形成了脚注、元数据定义与 HTML5 混合渲染的通用约定。\n\n---\n\n## 1. 学术脚注语法 (Footnotes)\n\n脚注在学术论文、深度研究特稿中是不可或缺的参考文献与注释工具：\n\n```markdown\n现代编译器前端架构[^1]通过多遍 AST 遍历实现代码优化，根据最新的 W3C 标准建议[^w3c]，排版时应保持字符边界清晰。\n\n[^1]: Aho, Alfred V., et al. "Compilers: Principles, Techniques, and Tools." Addison-Wesley, 2006.\n[^w3c]: W3C 中文排版需求标准 (CLReq), 2024 年修订版.\n```\n\n### 渲染行为与跳转机制：\n1. 正文中引用位置自动生成上标锚点超链接 `<sup><a href="#fn-1">[1]</a></sup>`；\n2. 文章最底部自动汇编所有脚注列表，并生成带反向回溯链接（Backlink `↩`) 的脚注容器。\n\n---\n\n## 2. 嵌入原生 HTML5：安全子集与消毒机制 (Sanitization)\n\nMarkdown 原生设计允许混入 HTML 标签。然而在多用户或自媒体系统中，任意 HTML 会带来严重的 XSS 跨站脚本攻击或破坏页面 DOM 树。\n\n### 2.1 推荐安全白名单标签集\n| 允许保留的 HTML 标签 | 典型应用场景 | 属性限制规则 |\n| :--- | :--- | :--- |\n| `<u>`, `<mark>` | 下划线强调、高亮背景文字 | 仅允许样式类或安全 inline-style |\n| `<sub>`, `<sup>` | 化学分子式（H~2~O）、代数平方（X^2^） | 禁止包含脚本属性 |\n| `<kbd>` | 键盘按键提示，如 `<kbd>Ctrl</kbd> + <kbd>C</kbd>` | 纯行内元素 |\n| `<details>`, `<summary>` | 原生折叠内容面板，常用于答案、补充代码 | `open` 属性可选 |\n\n### 2.2 必须机械剥离的高危标签黑名单\n必须通过 HTML Sanitizer 自动剔除以下标签与属性：\n- [高危禁止] `<script>`, `<iframe>`, `<object>`, `<embed>`：杜绝外部脚本注入；\n- [高危禁止] `onclick`, `onerror`, `onload` 等一切 `on*` 事件监听器；\n- [高危禁止] 带有 `javascript:` 伪协议的 `<a href="...">` 链接。\n',"markdown-specs/callouts-spec":`# 现代 Callout / Admonition 提示块标准化指南
 
 > Callout（提示块/告警框）已成为现代技术文档（GitHub Docs, VitePress, Obsidian, Docusaurus）的核心标配。本文定义标准化五色提示块语法规范。
 
@@ -106,7 +106,7 @@ flowchart LR
 - 配置 \`border-left: 4px solid var(--border-color)\` 与具有柔和通透感的主题浅底色。
 `},i={"typography/w3c-clreq":`# W3C 中文排版需求 (CLReq) 核心原则与现代 Web 落地指南
 
-> W3C 国际化工作组发布的《Requirements for Chinese Text Layout》（中文排版需求）是东亚表意文字排版学在数字时代的奠基性行业标准。
+> W3C 国际化工作组发布的《Requirements for Chinese Text Layout》（中文排版需求）是东亚表意文字排版学在数字时代的重要参考指南。深入理解汉字网格、行长与字距规律，是提升中文技术写作阅读体验的基石。
 
 ---
 
@@ -119,18 +119,18 @@ flowchart LR
 ### 1.2 字面比 (Face-to-Body Ratio) 对阅读密度的影响
 字身框是虚拟外框，而实际笔画墨迹占据的区域称为“字面（Letter Face）”：
 - **传统宋体/明体**：字面率约为 85%~90%，字间保留天然白虚线呼吸感，适合纸质书刊长文阅读；
-- **现代屏显黑体（如苹方、思源黑体）**：字面率扩大至 92%~95%，在高分屏上视觉冲击力强，但若行距不足极易造成拥挤与视觉疲劳。
+- **现代屏显黑体（如苹方、思源黑体）**：字面率扩大至 92%~95%，在高分屏上视觉冲击力强，但若行距不足极易造成拥挤与视觉疲劳。相关跨语言混排可参阅 [盘古之白中英文混排规范](#/pangu-spacing)。
 
 ---
 
 ## 2. 横排与竖排的字行行距基准
 
-根据 W3C CLReq 标准：
+根据 W3C CLReq 建议：
 - **行长 (Line Length)**：中文正文单行最佳字数应当控制在 **35 至 45 个汉字** 之间。单行超过 50 个汉字将导致换行寻行视线折返丢失（Tracking Loss）；
-- **行距 (Line Gap / Leading)**：汉字行距绝对不能沿用英文排版的 1.2 倍默认值。标准要求行空必须在 **0.5em 至 0.8em** 之间，即 CSS \`line-height\` 必须设定为 **1.6 至 1.85**。
+- **行距 (Line Gap / Leading)**：汉字行距绝对不能沿用英文排版的 1.2 倍默认值。建议行空在 **0.5em 至 0.8em** 之间，即 CSS \`line-height\` 推荐设定为 **1.6 至 1.85**。标点折行规则可进一步参考 [中文标点规范与避头尾法则](#/punctuation-system)。
 
 \`\`\`css
-/* W3C 推荐的现代 Web 中文正文标准排版类 */
+/* W3C 推荐的现代 Web 中文正文排版样式参考 */
 .article-reading-body {
   max-width: 68ch; /* 单行限制约 34-40 个全角字符 */
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
@@ -142,42 +142,42 @@ flowchart LR
 \`\`\`
 `,"typography/pangu-spacing":`# 盘古之白：中西文与数字混排空白规范
 
-> “有研究显示，打字的时候不喜欢在中文和英文之间加空格的人，感情路都走得很辛苦。” —— 盘古之白项目宣言。
-> 盘古之白规范旨在修复汉字与西文字母挤压在一起的视觉黏连问题，恢复字距呼吸律动。
+> “有研究显示，打字的时候在中文和英文之间留出适当间隙，行文视觉更清晰，阅读更舒适。” —— 盘古之白项目理念。
+> 盘古之白规范旨在处理汉字与西文字母挤压在一起的视觉黏连问题，使混排版面具有自然的呼吸节奏。
 
 ---
 
-## 1. 核心空格准则（什么场景必须加空格）
+## 1. 核心空格准则（什么场景建议留空格）
 
-在印刷时代，西文铅字与中文铅字之间天然存在字距调节空间。但在数字排版中，中英文必须显式留出 **四分之一汉字宽（Quarter-em Space, U+2005）** 或由空格符隔开：
+在印刷时代，西文铅字与中文铅字之间天然存在字距调节空间。在数字排版中，中英文推荐显式留出 **四分之一汉字宽（Quarter-em Space, U+2005）** 或由空格符隔开：
 
-### 1.1 中文与西文单词之间必须留出空格
-- ✅ **正确**：推荐使用 \`Node.js\` 编写高性能中间件服务。
-- ❌ **错误**：推荐使用Node.js编写高性能中间件服务。
+### 1.1 中文与西文单词之间推荐留出空格
+- [规范 / 推荐]：推荐使用 \`Node.js\` 编写高性能中间件服务。
+- [避免 / 不推荐]：推荐使用Node.js编写高性能中间件服务。
 
-### 1.2 中文与半角阿拉伯数字之间必须留出空格
-- ✅ **正确**：该集群节点将在 15 分钟内处理完成 500 万行日志数据。
-- ❌ **错误**：该集群节点将在15分钟内处理完成500万行日志数据。
+### 1.2 中文与半角阿拉伯数字之间推荐留出空格
+- [规范 / 推荐]：该集群节点将在 15 分钟内处理完成 500 万行日志数据。
+- [避免 / 不推荐]：该集群节点将在15分钟内处理完成500万行日志数据。
 
-### 1.3 中文与带有行内代码包裹的词组之间必须留出空格
-- ✅ **正确**：使用 \`git push --force\` 时必须谨慎对待。
-- ❌ **错误**：使用\`git push --force\`时必须谨慎对待。
+### 1.3 中文与带有行内代码包裹的词组之间推荐留出空格
+- [规范 / 推荐]：使用 \`git push --force\` 时必须谨慎对待。
+- [避免 / 不推荐]：使用\`git push --force\`时必须谨慎对待。
 
 ---
 
-## 2. 豁免准则（什么场景绝对禁止加空格）
+## 2. 豁免准则（什么场景不应加空格）
 
-盲目添加空格同样会破坏中文整体感。以下场景严禁追加空格：
+盲目添加空格同样会破坏中文整体感。以下场景应避免添加空格：
 
-1. **中文与全角标点符号之间禁止空格**：
-   - ✅ 正确：你好，世界！
-   - ❌ 错误：你好 ， 世界 ！
-2. **数字与度量衡单位符号（如 %、℃、°）之间禁止空格**：
-   - ✅ 正确：CPU 占用率已超过 95.8%，系统温度上升 3℃。
-   - ❌ 错误：CPU 占用率已超过 95.8 %，系统温度上升 3 ℃。
-3. **英文专有名词内部连字符禁止空格**：
-   - ✅ 正确：这是一个 Local-First 理念的离线编辑器。
-   - ❌ 错误：这是一个 Local - First 理念的离线编辑器。
+1. **中文与全角标点符号之间不加空格**：
+   - [规范]：你好，世界！
+   - [避免]：你好 ， 世界 ！
+2. **数字与度量衡单位符号（如 %、℃、°）之间不加空格**：
+   - [规范]：CPU 占用率已超过 95.8%，系统温度上升 3℃。
+   - [避免]：CPU 占用率已超过 95.8 %，系统温度上升 3 ℃。
+3. **英文专有名词内部连字符不加空格**：
+   - [规范]：这是一个 Local-First 理念的离线编辑器。
+   - [避免]：这是一个 Local - First 理念的离线编辑器。
 
 ---
 
@@ -718,8 +718,8 @@ flowchart TD
 
 1. **避免模糊主观副词**：禁止使用“简单”、“显然”、“只需几步即可”等具有认知偏见的词汇。技术事实无需情绪修饰；
 2. **主动语态优先于被动语态**：
-   - ✅ **推荐（主动）**：系统在接收到数据包后自动触发校验逻辑。
-   - ❌ **避免（被动）**：数据包被系统接收后，校验逻辑被自动触发。
+   - [推荐（主动）]：系统在接收到数据包后自动触发校验逻辑。
+   - [避免（被动）]：数据包被系统接收后，校验逻辑被自动触发。
 3. **保持术语全局绝对一致**：禁止在同一篇文档中对同一概念混用不同名词（如交替使用“Token”、“凭证”、“令牌”、“密钥”）。
 
 ---
@@ -799,10 +799,10 @@ CC 协议通过 4 种基础授权模块组合出 6 种标准许可：
 
 | 模块符号 | 模块简称 | 法律约束力定义 |
 | :---: | :--- | :--- |
-| 👤 | **BY (署名)** | 使用者必须向原作者明确署名，并提供原文链接与许可说明 |
-| 🚳 | **NC (非商业性使用)** | 仅允许非商业目的传播与分享，禁止任何营利性使用 |
-| 🔂 | **SA (相同方式共享)** | 若对原作品进行修改、演绎或衍生，衍生作品必须使用相同协议分发 |
-| 🚫 | **ND (禁止演绎)** | 仅允许原样复制分享，禁止修改、翻译、混剪或改编 |
+| [BY] | **署名 (Attribution)** | 使用者必须向原作者明确署名，并提供原文链接与许可说明 |
+| [NC] | **非商业性使用 (NonCommercial)** | 仅允许非商业目的传播与分享，禁止任何营利性使用 |
+| [SA] | **相同方式共享 (ShareAlike)** | 若对原作品进行修改、演绎或衍生，衍生作品必须使用相同协议分发 |
+| [ND] | **禁止演绎 (NoDerivatives)** | 仅允许原样复制分享，禁止修改、翻译、混剪或改编 |
 
 ### 技术写作最推荐的黄金组合：CC BY-NC-SA 4.0
 允许全球技术读者免费阅读、学习、演绎与分享，同时从法律层面彻底阻断未经授权的黑产洗稿、商业打包售卖等侵权行为。
@@ -996,7 +996,7 @@ npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
 - **提交 Issue / 勘误建议**：[GitHub Issues 页面](https://github.com/DF-Guan/we-markdown/issues)
 - **提交 Pull Request 参与编辑**：[GitHub 仓库主页](https://github.com/DF-Guan/we-markdown)
 - **文档使用许可**：采用 **知识共享 署名-非商业性使用-相同方式共享 4.0 国际许可协议 (CC BY-NC-SA 4.0)**，支持自由学习与非商业传播。
-`},d={...r,...i,...a,...o,...s,...c,...l,...u};function f(e){return d[e]?d[e]:r[`markdown-specs/spec-evolution`]}function p(e){return e?e.replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`).replace(/'/g,`&#039;`):``}function m(e){return e.toLowerCase().replace(/<[^>]+>/g,``).replace(/[^\w\u4e00-\u9fa5\s-]/g,``).trim().replace(/\s+/g,`-`)}function h(e){if(!e)return``;let t=e.replace(/`([^`]+)`/g,(e,t)=>`<code>${p(t)}</code>`);return t=t.replace(/\*\*([^*]+)\*\*/g,`<strong>$1</strong>`),t=t.replace(/\*([^*]+)\*/g,`<em>$1</em>`),t=t.replace(/~~([^~]+)~~/g,`<del>$1</del>`),t=t.replace(/\+\+([^+]+)\+\+/g,`<u>$1</u>`),t=t.replace(/==([^=]+)==/g,`<mark>$1</mark>`),t=t.replace(/~([^~]+)~/g,`<sub>$1</sub>`),t=t.replace(/\^([^^]+)\^/g,`<sup>$1</sup>`),t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(e,t,n)=>`<a href="${n}" ${n.startsWith(`http`)?`target="_blank" rel="noopener noreferrer"`:``}>${t}</a>`),t}function g(e){if(!e)return{html:``,toc:[]};let t=e.split(`
+`},d={...r,...i,...a,...o,...s,...c,...l,...u};function f(e){return d[e]?d[e]:r[`markdown-specs/spec-evolution`]}function p(e){return e?e.replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`).replace(/'/g,`&#039;`):``}function m(e){return e.toLowerCase().replace(/<[^>]+>/g,``).replace(/[^\w\u4e00-\u9fa5\s-]/g,``).trim().replace(/\s+/g,`-`)}function h(e){if(!e)return``;let t=e.replace(/`([^`]+)`/g,(e,t)=>`<code>${p(t)}</code>`);return t=t.replace(/\*\*([^*]+)\*\*/g,`<strong>$1</strong>`),t=t.replace(/\*([^*]+)\*/g,`<em>$1</em>`),t=t.replace(/~~([^~]+)~~/g,`<del>$1</del>`),t=t.replace(/\+\+([^+]+)\+\+/g,`<u>$1</u>`),t=t.replace(/==([^=]+)==/g,`<mark>$1</mark>`),t=t.replace(/~([^~]+)~/g,`<sub>$1</sub>`),t=t.replace(/\^([^^]+)\^/g,`<sup>$1</sup>`),t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(e,t,n)=>{let r=n.startsWith(`http`);return`<a href="${n}" class="${n.startsWith(`#/`)?`wikilink`:``}" ${r?`target="_blank" rel="noopener noreferrer"`:``}>${t}</a>`}),t}function g(e){if(!e)return{html:``,toc:[]};let t=e.split(`
 `),n=[],r=[],i=!1,a=``,o=[],s=!1,c=[];for(let e=0;e<t.length;e++){let l=t[e];if(l.trim().startsWith("```")){if(i){let e=p(o.join(`
 `));n.push(`
           <div class="code-block-container" data-lang="${a||`text`}">
@@ -1017,7 +1017,7 @@ npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
           </div>
           <div class="callout-body">${o}</div>
         </div>
-      `);continue}if(l.startsWith(`>`)){let r=[l.replace(/^>\s?/,``)];for(;e+1<t.length&&t[e+1].startsWith(`>`);)e++,r.push(t[e].replace(/^>\s?/,``));n.push(`<blockquote><p>${h(r.join(`<br/>`))}</p></blockquote>`);continue}if(/^\s*[-*]\s+(.*)$/.test(l)){let r=[],i=l;for(;i&&/^\s*[-*]\s+(.*)$/.test(i);){let n=i.replace(/^\s*[-*]\s+/,``);n.startsWith(`[x] `)?r.push(`<li class="task-item checked"><input type="checkbox" checked disabled /> ${h(n.slice(4))}</li>`):n.startsWith(`[ ] `)?r.push(`<li class="task-item"><input type="checkbox" disabled /> ${h(n.slice(4))}</li>`):r.push(`<li>${h(n)}</li>`),e++,i=t[e]}e--,n.push(`<ul>${r.join(``)}</ul>`);continue}if(/^\s*\d+\.\s+(.*)$/.test(l)){let r=[],i=l;for(;i&&/^\s*\d+\.\s+(.*)$/.test(i);){let n=i.replace(/^\s*\d+\.\s+/,``);r.push(`<li>${h(n)}</li>`),e++,i=t[e]}e--,n.push(`<ol>${r.join(``)}</ol>`);continue}l.trim()&&n.push(`<p>${h(l)}</p>`)}return s&&n.push(_(c)),{html:n.join(`
+      `);continue}if(l.startsWith(`>`)){let i=[l.replace(/^>\s?/,``)];for(;e+1<t.length&&t[e+1].startsWith(`>`);)e++,i.push(t[e].replace(/^>\s?/,``));let a=r.length===0&&n.length<=2;n.push(`<blockquote class="${a?`docs-lead-abstract`:``}"><p>${h(i.join(`<br/>`))}</p></blockquote>`);continue}if(/^\s*[-*]\s+(.*)$/.test(l)){let r=[],i=l;for(;i&&/^\s*[-*]\s+(.*)$/.test(i);){let n=i.replace(/^\s*[-*]\s+/,``);n.startsWith(`[x] `)?r.push(`<li class="task-item checked"><input type="checkbox" checked disabled /> ${h(n.slice(4))}</li>`):n.startsWith(`[ ] `)?r.push(`<li class="task-item"><input type="checkbox" disabled /> ${h(n.slice(4))}</li>`):r.push(`<li>${h(n)}</li>`),e++,i=t[e]}e--,n.push(`<ul>${r.join(``)}</ul>`);continue}if(/^\s*\d+\.\s+(.*)$/.test(l)){let r=[],i=l;for(;i&&/^\s*\d+\.\s+(.*)$/.test(i);){let n=i.replace(/^\s*\d+\.\s+/,``);r.push(`<li>${h(n)}</li>`),e++,i=t[e]}e--,n.push(`<ol>${r.join(``)}</ol>`);continue}l.trim()&&n.push(`<p>${h(l)}</p>`)}return s&&n.push(_(c)),{html:n.join(`
 `),toc:r}}function _(e){if(!e||e.length<2)return``;let t=e[0],n=e.slice(2),r=e=>e.trim().replace(/^\||\|$/g,``).split(`|`).map(e=>h(e.trim()));return`
     <div class="table-container">
       <table class="docs-table">
@@ -1025,7 +1025,7 @@ npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
         <tbody>${n.map(e=>`<tr>${r(e).map(e=>`<td>${e}</td>`).join(``)}</tr>`).join(``)}</tbody>
       </table>
     </div>
-  `}function v(e){switch(e){case`NOTE`:return`ℹ️`;case`TIP`:return`💡`;case`IMPORTANT`:return`📌`;case`WARNING`:return`⚠️`;case`CAUTION`:return`🛑`;default:return`ℹ️`}}function y(e){switch(e){case`NOTE`:return`提示 (Note)`;case`TIP`:return`技巧 (Tip)`;case`IMPORTANT`:return`重要 (Important)`;case`WARNING`:return`警告 (Warning)`;case`CAUTION`:return`避坑警示 (Caution)`;default:return`提示`}}function b(e){if(!e||!e.trim())return[];let n=e.trim().toLowerCase().split(/\s+/).filter(Boolean);if(n.length===0)return[];let r=[];return t.forEach(e=>{let t=(d[e.id]||``).toLowerCase(),i=e.title.toLowerCase(),a=(e.description||``).toLowerCase(),o=0,s=-1;if(n.forEach(e=>{i.includes(e)&&(o+=100,i.startsWith(e)&&(o+=50)),a.includes(e)&&(o+=30);let n=t.indexOf(e),r=0;for(;n!==-1&&r<10;)o+=5,s===-1&&(s=n),n=t.indexOf(e,n+e.length),r++}),o>0){let t=``,n=d[e.id]||``;if(s!==-1){let e=Math.max(0,s-40),r=Math.min(n.length,s+80);t=(e>0?`...`:``)+n.slice(e,r).replace(/\n/g,` `)+(r<n.length?`...`:``)}else t=e.description||n.slice(0,80);r.push({doc:e,score:o,snippet:t})}}),r.sort((e,t)=>t.score-e.score).slice(0,12)}var x=`darktu-docs-theme`;function S(){if(typeof window>`u`)return`light`;try{let e=localStorage.getItem(x);if(e===`dark`||e===`light`)return e;if(window.matchMedia&&window.matchMedia(`(prefers-color-scheme: dark)`).matches)return`dark`}catch{}return`light`}function C(e){if(!(typeof document>`u`)){document.documentElement.setAttribute(`data-theme`,e);try{localStorage.setItem(x,e)}catch{}}}function w(){let e=(document.documentElement.getAttribute(`data-theme`)||`light`)===`dark`?`light`:`dark`;return C(e),e}function T(){typeof window>`u`||(window.__copyCodeBlock=function(e){let t=e.closest(`.code-block-container`)?.querySelector(`code`);if(!t)return;let n=t.innerText;navigator.clipboard.writeText(n).then(()=>{e.classList.add(`copied`);let t=e.querySelector(`span`),n=t?t.innerText:``;t&&(t.innerText=`已复制`),setTimeout(()=>{e.classList.remove(`copied`),t&&(t.innerText=n)},1800)})})}function E(){if(typeof window>`u`||!(`IntersectionObserver`in window))return;let e=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){let t=e.target.id;document.querySelectorAll(`.toc-link`).forEach(e=>e.classList.remove(`active`)),document.querySelector(`.toc-link[data-heading="${t}"]`)?.classList.add(`active`)}})},{rootMargin:`0px 0px -70% 0px`});document.querySelectorAll(`.heading-anchor`).forEach(t=>e.observe(t))}function D(){if(typeof window>`u`)return;let e=document.getElementById(`readingProgressBar`);window.addEventListener(`scroll`,()=>{let t=document.documentElement.scrollHeight-window.innerHeight,n=window.scrollY,r=t>0?n/t*100:0;e&&(e.style.width=`${Math.min(100,Math.max(0,r))}%`)},{passive:!0}),document.getElementById(`backToTopBtn`)?.addEventListener(`click`,()=>{window.scrollTo({top:0,behavior:`smooth`})})}var O=class{constructor(){this.currentDoc=null,this.init()}init(){T(),D(),C(S()),document.getElementById(`themeToggleBtn`)?.addEventListener(`click`,()=>w());let e=document.getElementById(`mobileMenuToggle`),t=document.getElementById(`docsSidebar`),n=document.getElementById(`sidebarBackdrop`);e?.addEventListener(`click`,()=>{t?.classList.toggle(`mobile-open`),n&&(n.style.display=t?.classList.contains(`mobile-open`)?`block`:`none`)}),n?.addEventListener(`click`,()=>{t?.classList.remove(`mobile-open`),n&&(n.style.display=`none`)}),this.renderSidebar(),window.addEventListener(`hashchange`,()=>this.handleRoute()),this.handleRoute(),this.initSearch()}renderSidebar(){let t=document.getElementById(`sidebarTree`);t&&(t.innerHTML=e.map(e=>`
+  `}function v(e){switch(e){case`NOTE`:return`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;case`TIP`:return`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 7a5 5 0 0 1 5 5c0 2-1 3-2 4H9c-1-1-2-2-2-4a5 5 0 0 1 5-5z"/></svg>`;case`IMPORTANT`:return`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;case`WARNING`:return`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;case`CAUTION`:return`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`;default:return`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`}}function y(e){switch(e){case`NOTE`:return`说明`;case`TIP`:return`技巧`;case`IMPORTANT`:return`关键`;case`WARNING`:return`注意`;case`CAUTION`:return`警示`;default:return`说明`}}function b(e){if(!e||!e.trim())return[];let n=e.trim().toLowerCase().split(/\s+/).filter(Boolean);if(n.length===0)return[];let r=[];return t.forEach(e=>{let t=(d[e.id]||``).toLowerCase(),i=e.title.toLowerCase(),a=(e.description||``).toLowerCase(),o=0,s=-1;if(n.forEach(e=>{i.includes(e)&&(o+=100,i.startsWith(e)&&(o+=50)),a.includes(e)&&(o+=30);let n=t.indexOf(e),r=0;for(;n!==-1&&r<10;)o+=5,s===-1&&(s=n),n=t.indexOf(e,n+e.length),r++}),o>0){let t=``,n=d[e.id]||``;if(s!==-1){let e=Math.max(0,s-40),r=Math.min(n.length,s+80);t=(e>0?`...`:``)+n.slice(e,r).replace(/\n/g,` `)+(r<n.length?`...`:``)}else t=e.description||n.slice(0,80);r.push({doc:e,score:o,snippet:t})}}),r.sort((e,t)=>t.score-e.score).slice(0,12)}var x=`darktu-docs-theme`;function S(){if(typeof window>`u`)return`light`;try{let e=localStorage.getItem(x);if(e===`dark`||e===`light`)return e;if(window.matchMedia&&window.matchMedia(`(prefers-color-scheme: dark)`).matches)return`dark`}catch{}return`light`}function C(e){if(!(typeof document>`u`)){document.documentElement.setAttribute(`data-theme`,e);try{localStorage.setItem(x,e)}catch{}}}function w(){let e=(document.documentElement.getAttribute(`data-theme`)||`light`)===`dark`?`light`:`dark`;return C(e),e}function T(){typeof window>`u`||(window.__copyCodeBlock=function(e){let t=e.closest(`.code-block-container`)?.querySelector(`code`);if(!t)return;let n=t.innerText;navigator.clipboard.writeText(n).then(()=>{e.classList.add(`copied`);let t=e.querySelector(`span`),n=t?t.innerText:``;t&&(t.innerText=`已复制`),setTimeout(()=>{e.classList.remove(`copied`),t&&(t.innerText=n)},1800)})})}function E(){if(typeof window>`u`||!(`IntersectionObserver`in window))return;let e=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){let t=e.target.id;document.querySelectorAll(`.toc-link`).forEach(e=>e.classList.remove(`active`)),document.querySelector(`.toc-link[data-heading="${t}"]`)?.classList.add(`active`)}})},{rootMargin:`0px 0px -70% 0px`});document.querySelectorAll(`.heading-anchor`).forEach(t=>e.observe(t))}function D(){if(typeof window>`u`)return;let e=document.getElementById(`readingProgressBar`);window.addEventListener(`scroll`,()=>{let t=document.documentElement.scrollHeight-window.innerHeight,n=window.scrollY,r=t>0?n/t*100:0;e&&(e.style.width=`${Math.min(100,Math.max(0,r))}%`)},{passive:!0}),document.getElementById(`backToTopBtn`)?.addEventListener(`click`,()=>{window.scrollTo({top:0,behavior:`smooth`})})}function O(e){return{editUrl:`https://github.com/DF-Guan/we-markdown/blob/master/projects/darktu-docs/src/data/articles/${{"markdown-specs":`markdownSpecs.js`,typography:`clreqTypography.js`,math:`latexFormulas.js`,diagrams:`codeAndMermaid.js`,clipboard:`clipboardEngineering.js`,assets:`assetsStorage.js`,writing:`technicalWriting.js`,appendix:`appendixMaintenance.js`}[(e.id||``).split(`/`)[0]]||`markdownSpecs.js`}`,issueUrl:`https://github.com/DF-Guan/we-markdown/issues/new?title=${encodeURIComponent(`[词条勘误] ${e.title}`)}&body=${encodeURIComponent(`**词条名称**：${e.title} (#/${e.slug})\n**发现问题**：\n\n**修改建议**：\n`)}`}}var k=class{constructor(){this.currentDoc=null,this.init()}init(){T(),D(),C(S()),document.getElementById(`themeToggleBtn`)?.addEventListener(`click`,()=>w());let e=document.getElementById(`mobileMenuToggle`),t=document.getElementById(`docsSidebar`),n=document.getElementById(`sidebarBackdrop`);e?.addEventListener(`click`,()=>{t?.classList.toggle(`mobile-open`),n&&(n.style.display=t?.classList.contains(`mobile-open`)?`block`:`none`)}),n?.addEventListener(`click`,()=>{t?.classList.remove(`mobile-open`),n&&(n.style.display=`none`)}),this.renderSidebar(),window.addEventListener(`hashchange`,()=>this.handleRoute()),this.handleRoute(),this.initSearch()}renderSidebar(){let t=document.getElementById(`sidebarTree`);t&&(t.innerHTML=e.map(e=>`
       <div class="sidebar-category" id="cat-${e.id}">
         <div class="sidebar-category-header" onclick="this.parentElement.classList.toggle('collapsed')">
           <div class="category-title-group">
@@ -1056,25 +1056,25 @@ npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
         <span class="docs-meta-item">字数：约 ${l} 字</span>
         <span class="docs-meta-divider"></span>
         <span class="docs-meta-item">修订：2026-09</span>
-      `);let{html:d,toc:p}=g(c);a&&(a.innerHTML=d),s&&(s.innerHTML=p.length===0?`<li class="toc-item"><span style="color: var(--text-muted);">本条目暂无小节</span></li>`:p.map(e=>`
+      `);let{html:d,toc:p}=g(c);if(a&&(a.innerHTML=d),s&&(s.innerHTML=p.length===0?`<li class="toc-item"><span style="color: var(--text-muted);">本条目暂无小节</span></li>`:p.map(e=>`
             <li class="toc-item level-${e.level}">
               <a href="#${e.id}" class="toc-link" data-heading="${e.id}">${e.text}</a>
             </li>
-          `).join(``),E()),o&&(o.innerHTML=`
+          `).join(``),E()),o){let{editUrl:r,issueUrl:i}=O(e);o.innerHTML=`
         <div class="article-wiki-footer">
           <div class="wiki-footer-left">
-            <span>本条目内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> 许可，欢迎自由阅读学习。</span>
+            <span>本条目内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> 开放许可，面向大众自由阅读学习。</span>
           </div>
           <div class="wiki-footer-right">
-            <a href="https://github.com/DF-Guan/we-markdown" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">在 GitHub 参与编辑</a>
-            <a href="https://github.com/DF-Guan/we-markdown/issues/new?title=${encodeURIComponent(`[词条勘误] ${e.title}`)}" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">报告勘误</a>
+            <a href="${r}" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">在 GitHub 编辑此条目</a>
+            <a href="${i}" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">提交勘误</a>
           </div>
         </div>
         <div style="display: flex; gap: 16px; width: 100%; margin-top: 24px;">
           ${t?`<a href="#/${t.slug}" class="nav-card prev"><span class="nav-card-label">← 上一词条</span><span class="nav-card-title">${t.title}</span></a>`:`<div style="flex:1;"></div>`}
           ${n?`<a href="#/${n.slug}" class="nav-card next"><span class="nav-card-label">下一词条 →</span><span class="nav-card-title">${n.title}</span></a>`:`<div style="flex:1;"></div>`}
         </div>
-      `),document.title=`${e.title} - Darktu 知识库`}initSearch(){let e=document.getElementById(`searchModalOverlay`),t=document.getElementById(`searchInputField`),n=document.getElementById(`searchResultsList`),r=()=>{e?.classList.remove(`hidden`),t?.focus()},i=()=>{e?.classList.add(`hidden`),t&&(t.value=``),n&&(n.innerHTML=``)};document.getElementById(`headerSearchBtn`)?.addEventListener(`click`,r),document.getElementById(`searchCloseBtn`)?.addEventListener(`click`,i),e?.addEventListener(`click`,t=>{t.target===e&&i()}),window.addEventListener(`keydown`,e=>{(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()===`k`?(e.preventDefault(),r()):(e.key===`Escape`||e.keyCode===27)&&i()}),t?.addEventListener(`input`,e=>{let t=e.target.value,r=b(t);n&&(n.innerHTML=r.length===0?`<div class="search-empty">未检索到匹配的知识条目</div>`:r.map(e=>`
+      `}document.title=`${e.title} - Darktu 知识库`}initSearch(){let e=document.getElementById(`searchModalOverlay`),t=document.getElementById(`searchInputField`),n=document.getElementById(`searchResultsList`),r=()=>{e?.classList.remove(`hidden`),t?.focus()},i=()=>{e?.classList.add(`hidden`),t&&(t.value=``),n&&(n.innerHTML=``)};document.getElementById(`headerSearchBtn`)?.addEventListener(`click`,r),document.getElementById(`searchCloseBtn`)?.addEventListener(`click`,i),e?.addEventListener(`click`,t=>{t.target===e&&i()}),window.addEventListener(`keydown`,e=>{(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()===`k`?(e.preventDefault(),r()):(e.key===`Escape`||e.keyCode===27)&&i()}),t?.addEventListener(`input`,e=>{let t=e.target.value,r=b(t);n&&(n.innerHTML=r.length===0?`<div class="search-empty">未检索到匹配的知识条目</div>`:r.map(e=>`
             <a href="#/${e.doc.slug}" class="search-result-item" onclick="document.getElementById('searchModalOverlay').classList.add('hidden')">
               <div class="search-result-header">
                 <span class="search-result-title">${e.doc.title}</span>
@@ -1082,4 +1082,4 @@ npx wrangler pages deploy dist --project-name=darktu-docs --branch=main
               </div>
               <div class="search-result-snippet">${e.snippet}</div>
             </a>
-          `).join(``))})}};function k(){return new O}typeof window<`u`&&document.addEventListener(`DOMContentLoaded`,()=>k());
+          `).join(``))})}};function A(){return new k}typeof window<`u`&&document.addEventListener(`DOMContentLoaded`,()=>A());

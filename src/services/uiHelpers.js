@@ -59,3 +59,28 @@ export function setupReadingProgressAndBackTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
+
+/**
+ * 根据文章 ID 计算对应的 GitHub 源码编辑链接与预填勘误 Issue 链接
+ */
+export function getWikiEditLinks(doc) {
+  const catToSourceFile = {
+    "markdown-specs": "markdownSpecs.js",
+    typography: "clreqTypography.js",
+    math: "latexFormulas.js",
+    diagrams: "codeAndMermaid.js",
+    clipboard: "clipboardEngineering.js",
+    assets: "assetsStorage.js",
+    writing: "technicalWriting.js",
+    appendix: "appendixMaintenance.js",
+  };
+  const categoryKey = (doc.id || "").split("/")[0];
+  const sourceFile = catToSourceFile[categoryKey] || "markdownSpecs.js";
+  const editUrl = `https://github.com/DF-Guan/we-markdown/blob/master/projects/darktu-docs/src/data/articles/${sourceFile}`;
+  const issueUrl = `https://github.com/DF-Guan/we-markdown/issues/new?title=${encodeURIComponent(
+    `[词条勘误] ${doc.title}`
+  )}&body=${encodeURIComponent(
+    `**词条名称**：${doc.title} (#/${doc.slug})\n**发现问题**：\n\n**修改建议**：\n`
+  )}`;
+  return { editUrl, issueUrl };
+}

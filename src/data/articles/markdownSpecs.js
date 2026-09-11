@@ -1,6 +1,6 @@
 /**
  * 篇章一：Markdown 核心规范与语法标准全集 (markdownSpecs.js)
- * 行业通用标准指南：CommonMark, GFM, 边缘规则, Callouts
+ * 学习参考指南：CommonMark, GFM, 边缘规则, Callouts
  */
 
 export const MARKDOWN_SPECS_ARTICLES = {
@@ -31,7 +31,7 @@ Gruber 的初代实现 \`Markdown.pl\` 仅是一份不到 1,000 行的 Perl 正�
 
 | 规范名称 | 发起机构/主导者 | 核心定位 | 核心特性 | 现代代表解析器 |
 | :--- | :--- | :--- | :--- | :--- |
-| **CommonMark** | Jeff Atwood, John MacFarlane 等 | 业界唯一严格的形式化数学规范 | 消除所有二义性、600+ 规范用例套件、AST 明确映射 | \`cmark\` (C), \`markdown-it\` (JS) |
+| **CommonMark** | Jeff Atwood, John MacFarlane 等 | 严格的形式化数学规范 | 消除所有二义性、600+ 规范用例套件、AST 明确映射 | \`cmark\` (C), \`markdown-it\` (JS) |
 | **GFM (GitHub Flavored)** | GitHub 官方 | 基于 CommonMark 的开发者扩展集 | 扩展表格、任务列表、删除线、自动链接、Emoji | \`cmark-gfm\`, \`comrak\` (Rust) |
 | **Markdown Extra** | Michel Fortin | PHP 社区经典扩展 | 脚注 (Footnotes)、定义列表、代码块自定义属性 | \`php-markdown\`, \`Python-Markdown\` |
 | **Pandoc Markdown** | John MacFarlane | 学术界与出版界全能通用中间语言 | 超全数学公式、文献引用、多列排版、元数据 YAML | \`pandoc\` (Haskell) |
@@ -178,7 +178,7 @@ interface UserProfile {
 
   "markdown-specs/gfm-extensions": `# GitHub Flavored Markdown (GFM) 扩展规范手册
 
-> GFM 是当今开源界与商业开发者软件事实上的第一标准。本文系统梳理 GFM 在 CommonMark 基础之上引入的核心扩展。
+> GFM 是开源社区与开发者工具中广泛采用的扩展规范。本文系统梳理 GFM 在 [CommonMark 核心规范](#/syntax) 基础之上引入的核心扩展。
 
 ---
 
@@ -244,7 +244,7 @@ GFM 规范要求将任务列表渲染为不可点击或只读的勾选框元素�
 
   "markdown-specs/advanced-markdown": `# Markdown 高级排版特性与 HTML5 嵌入规范
 
-> 当标准语法无法满足学术专著、复杂书籍或精细化排版需求时，Markdown 社区制定了脚注、元数据定义与 HTML5 混合渲染的行业准则。
+> 当标准语法无法满足学术专著、复杂书籍或精细化排版需求时，Markdown 社区逐渐形成了脚注、元数据定义与 HTML5 混合渲染的通用约定。
 
 ---
 
@@ -269,7 +269,7 @@ GFM 规范要求将任务列表渲染为不可点击或只读的勾选框元素�
 
 Markdown 原生设计允许混入 HTML 标签。然而在多用户或自媒体系统中，任意 HTML 会带来严重的 XSS 跨站脚本攻击或破坏页面 DOM 树。
 
-### 2.1 业界通用白名单标签集
+### 2.1 推荐安全白名单标签集
 | 允许保留的 HTML 标签 | 典型应用场景 | 属性限制规则 |
 | :--- | :--- | :--- |
 | \`<u>\`, \`<mark>\` | 下划线强调、高亮背景文字 | 仅允许样式类或安全 inline-style |
@@ -279,9 +279,9 @@ Markdown 原生设计允许混入 HTML 标签。然而在多用户或自媒体�
 
 ### 2.2 必须机械剥离的高危标签黑名单
 必须通过 HTML Sanitizer 自动剔除以下标签与属性：
-- ❌ \`<script>\`, \`<iframe>\`, \`<object>\`, \`<embed>\`：杜绝外部脚本注入；
-- ❌ \`onclick\`, \`onerror\`, \`onload\` 等一切 \`on*\` 事件监听器；
-- ❌ 带有 \`javascript:\` 伪协议的 \`<a href="...">\` 链接。
+- [高危禁止] \`<script>\`, \`<iframe>\`, \`<object>\`, \`<embed>\`：杜绝外部脚本注入；
+- [高危禁止] \`onclick\`, \`onerror\`, \`onload\` 等一切 \`on*\` 事件监听器；
+- [高危禁止] 带有 \`javascript:\` 伪协议的 \`<a href="...">\` 链接。
 `,
 
   "markdown-specs/callouts-spec": `# 现代 Callout / Admonition 提示块标准化指南

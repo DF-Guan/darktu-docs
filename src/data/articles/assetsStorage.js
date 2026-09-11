@@ -1,6 +1,6 @@
 /**
  * 篇章六：数字资产管理、图床与安全架构 (assetsStorage.js)
- * 行业权威规范：S3/R2/OSS 签名鉴权, WebP/AVIF 现代图片格式, 防盗链与 EXIF 隐私
+ * 媒体资源学习指南：S3/R2/OSS 签名鉴权, WebP/AVIF 现代图片格式, 防盗链与 EXIF 隐私
  */
 
 export const ASSETS_STORAGE_ARTICLES = {

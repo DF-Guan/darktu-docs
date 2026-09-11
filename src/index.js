@@ -8,7 +8,7 @@ import { getArticleMarkdown } from "./data/articlesContent.js";
 import { renderMarkdown } from "./services/markdownRenderer.js";
 import { searchKnowledgeBase } from "./services/searchService.js";
 import { getInitialTheme, applyTheme, toggleTheme } from "./services/themeService.js";
-import { setupCodeCopy, setupTOCScrollSpy, setupReadingProgressAndBackTop } from "./services/uiHelpers.js";
+import { setupCodeCopy, setupTOCScrollSpy, setupReadingProgressAndBackTop, getWikiEditLinks } from "./services/uiHelpers.js";
 
 export class DarktuDocsApp {
   constructor() {
@@ -153,14 +153,15 @@ export class DarktuDocsApp {
     }
 
     if (footerEl) {
+      const { editUrl, issueUrl } = getWikiEditLinks(doc);
       footerEl.innerHTML = `
         <div class="article-wiki-footer">
           <div class="wiki-footer-left">
-            <span>本条目内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> 许可，欢迎自由阅读学习。</span>
+            <span>本条目内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> 开放许可，面向大众自由阅读学习。</span>
           </div>
           <div class="wiki-footer-right">
-            <a href="https://github.com/DF-Guan/we-markdown" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">在 GitHub 参与编辑</a>
-            <a href="https://github.com/DF-Guan/we-markdown/issues/new?title=${encodeURIComponent(`[词条勘误] ${doc.title}`)}" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">报告勘误</a>
+            <a href="${editUrl}" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">在 GitHub 编辑此条目</a>
+            <a href="${issueUrl}" target="_blank" rel="noopener noreferrer" class="wiki-edit-btn">提交勘误</a>
           </div>
         </div>
         <div style="display: flex; gap: 16px; width: 100%; margin-top: 24px;">

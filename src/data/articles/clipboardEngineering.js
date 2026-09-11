@@ -1,6 +1,6 @@
 /**
  * 篇章五：富文本剪贴板与排版引擎底层工程 (clipboardEngineering.js)
- * 行业权威规范：MIME text/html, CSS 行内化 Inliner, 微信排版沙箱, SVG/Canvas 渲染
+ * 剪贴板与富文本学习指南：MIME text/html, CSS 行内化 Inliner, 微信排版沙箱, SVG/Canvas 渲染
  */
 
 export const CLIPBOARD_ENGINEERING_ARTICLES = {
