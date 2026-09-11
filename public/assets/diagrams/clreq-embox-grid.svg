@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .grid-line { stroke: #cbd5e1; stroke-dasharray: 4,4; stroke-width: 1; }
+      .em-box { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; stroke-dasharray: 6,6; }
+      .face-box { fill: #ffffff; stroke: #2563eb; stroke-width: 2; }
+      .hanzi { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif; font-size: 110px; font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+      .dim-line { stroke: #e11d48; stroke-width: 1.5; marker-end: url(#arrow); marker-start: url(#arrow); }
+      .label-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .label-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12.5px; fill: #475569; }
+      .label-hl { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12px; font-weight: 600; fill: #2563eb; }
+      .dim-text { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; font-weight: 600; fill: #e11d48; }
+      .badge-em { fill: #dbeafe; stroke: #bfdbfe; rx: 4; }
+      .badge-face { fill: #fee2e2; stroke: #fecaca; rx: 4; }
+      .badge-rate { fill: #fef3c7; stroke: #fde68a; rx: 4; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#e11d48" />
+    </marker>
+  </defs>
+
+  <!-- 背景底色与外框 -->
+  <rect width="820" height="400" rx="10" class="bg" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <!-- 标题标头 -->
+  <text x="32" y="36" class="label-title">W3C 中文排版需求 (CLReq) · 汉字网格与字面框结构图解</text>
+  <text x="32" y="58" class="label-desc">汉字以正方形虚拟字身框（EM-box）为网格基础，字面框大小决定了版面视觉张力与呼吸感。</text>
+
+  <!-- 左侧：字身框与字面框拆解模型 (Center: x=200, y=230) -->
+  <!-- 虚拟字身框 1000x1000 -> 220x220 -->
+  <rect x="90" y="100" width="220" height="220" class="em-box" />
+  <!-- 十字参考辅助线 -->
+  <line x1="90" y1="210" x2="310" y2="210" class="grid-line" />
+  <line x1="200" y1="100" x2="200" y2="320" class="grid-line" />
+  <!-- 真实字面框 920x920 -> 184x184 -->
+  <rect x="108" y="118" width="184" height="184" class="face-box" />
+  <!-- 示例汉字“永” -->
+  <text x="200" y="210" class="hanzi">永</text>
+
+  <!-- 尺寸标注线：字身框 1em -->
+  <line x1="72" y1="100" x2="72" y2="320" class="dim-line" />
+  <text x="64" y="214" class="dim-text" text-anchor="end">字身框 1.0 em</text>
+
+  <!-- 尺寸标注线：字面框 (约 92% 字面率) -->
+  <line x1="108" y1="334" x2="292" y2="334" class="dim-line" />
+  <text x="200" y="352" class="dim-text" text-anchor="middle">字面宽 0.92 em (字面率 92%)</text>
+
+  <!-- 右侧：对比与排版工程学解析卡片 -->
+  <g transform="translate(370, 95)">
+    <!-- 卡片 1: 字身框 (EM-box) -->
+    <rect x="0" y="0" width="410" height="74" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" />
+    <rect x="14" y="12" width="100" height="22" class="badge-em" />
+    <text x="64" y="27" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">1. 虚拟字身框</text>
+    <text x="14" y="52" class="label-desc">在数字字体（OpenType）中定义为 1000 单元的标准正方形网格；</text>
+    <text x="14" y="68" class="label-desc">字与字在水平方向紧密相贴，无外边距时字身框无缝咬合。</text>
+
+    <!-- 卡片 2: 字面框与字面比 (Actual Face) -->
+    <rect x="0" y="86" width="410" height="74" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" />
+    <rect x="14" y="98" width="100" height="22" class="badge-face" />
+    <text x="64" y="113" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">2. 真实字面框</text>
+    <text x="14" y="138" class="label-desc">汉字实际笔画墨迹的外接矩形。四周自然留出「字身内余白」；</text>
+    <text x="14" y="154" class="label-desc">黑体字面率通常达 92%~95%，宋体/仿宋字面率约为 82%~86%。</text>
+
+    <!-- 卡片 3: 排版工程行距影响 -->
+    <rect x="0" y="172" width="410" height="84" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2" />
+    <rect x="14" y="184" width="112" height="22" class="badge-rate" />
+    <text x="70" y="199" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">3. 行距自适应定律</text>
+    <text x="14" y="224" class="label-desc">字面率越大（如现代屏显黑体），视觉堵塞感越强，必须配比</text>
+    <text x="14" y="242" class="label-hl">更大行高系数（1.75 ~ 1.85）；而传统宋体可采用 1.5 ~ 1.6 行高。</text>
+  </g>
+</svg>

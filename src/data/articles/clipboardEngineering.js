@@ -12,6 +12,8 @@ export const CLIPBOARD_ENGINEERING_ARTICLES = {
 
 ## 1. 现代操作系统剪贴板的 MIME 多重分流机制
 
+![富文本剪贴板架构 · 多重 MIME 数据包与 CSS 行内化 (Inliner) 机制](./assets/diagrams/clipboard-mime-architecture.svg)
+
 当用户在浏览器中按下 \`Ctrl+C\` 或调用系统 \`navigator.clipboard.write()\` 时，操作系统底层剪贴板并非只存储单一字符串，而是以**多 MIME 类型数据包**的形式注册：
 
 \`\`\`mermaid

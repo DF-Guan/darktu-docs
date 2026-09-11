@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box-board { fill: #ffffff; stroke: #3b82f6; stroke-width: 2; rx: 8; }
+      .box-mime { fill: #eff6ff; stroke: #bfdbfe; stroke-width: 1.2; rx: 6; }
+      .box-inliner { fill: #fef3c7; stroke: #f59e0b; stroke-width: 1.5; rx: 8; }
+      .box-dest { fill: #f0fdf4; stroke: #22c55e; stroke-width: 1.5; rx: 8; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12.5px; fill: #475569; }
+      .arrow { stroke: #64748b; stroke-width: 2; marker-end: url(#cp-arrow); fill: none; }
+      .arrow-err { stroke: #e11d48; stroke-width: 1.5; stroke-dasharray: 4,4; marker-end: url(#err-arrow); fill: none; }
+    </style>
+    <marker id="cp-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#64748b" />
+    </marker>
+    <marker id="err-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#e11d48" />
+    </marker>
+  </defs>
+
+  <rect width="820" height="400" rx="10" class="bg" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <text x="32" y="34" class="title">富文本剪贴板架构 · 多重 MIME 数据包与 CSS 行内化 (Inliner) 机制</text>
+  <text x="32" y="54" class="desc">操作系统剪贴板原生支持多格式载荷；CSS 行内化彻底解决跨平台粘贴外部样式被剥离的排版灾难。</text>
+
+  <!-- 左侧：系统剪贴板 (OS Clipboard) -->
+  <g transform="translate(32, 85)">
+    <rect width="250" height="280" class="box-board" />
+    <text x="20" y="30" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e40af">📋 操作系统级剪贴板</text>
+    <text x="20" y="48" font-size="11" fill="#64748b">一次写入，三大标准 MIME 格式并存</text>
+
+    <!-- MIME 1: text/plain -->
+    <g transform="translate(16, 62)">
+      <rect width="218" height="58" class="box-mime" />
+      <text x="12" y="22" font-family="monospace" font-size="11" font-weight="700" fill="#1e40af">1. text/plain (纯文本)</text>
+      <text x="12" y="40" font-size="10.5" fill="#475569">给记事本、代码编辑器准备的兜底纯字符</text>
+    </g>
+
+    <!-- MIME 2: text/html (带 Inliner) -->
+    <g transform="translate(16, 130)">
+      <rect width="218" height="68" class="box-mime" stroke="#3b82f6" stroke-width="1.8" fill="#dbeafe" />
+      <text x="12" y="22" font-family="monospace" font-size="11.5" font-weight="700" fill="#1d4ed8">2. text/html (核心载荷)</text>
+      <text x="12" y="40" font-size="10.5" fill="#1e40af">每一个 DOM 节点均附带计算后的</text>
+      <text x="12" y="56" font-family="monospace" font-size="10" font-weight="600" fill="#2563eb">style="font-size:16px;..."</text>
+    </g>
+
+    <!-- MIME 3: image/png -->
+    <g transform="translate(16, 208)">
+      <rect width="218" height="58" class="box-mime" />
+      <text x="12" y="22" font-family="monospace" font-size="11" font-weight="700" fill="#1e40af">3. image/png (位图备援)</text>
+      <text x="12" y="40" font-size="10.5" fill="#475569">长图合成、微信聊天窗口直接粘贴为图片</text>
+    </g>
+  </g>
+
+  <!-- 中间：Inliner 算法核心处理区 -->
+  <g transform="translate(315, 85)">
+    <rect width="220" height="280" class="box-inliner" />
+    <text x="18" y="30" font-family="sans-serif" font-size="13.5" font-weight="700" fill="#b45309">⚙️ Juice / Inliner 编译内核</text>
+    <text x="18" y="50" font-size="11" fill="#78350f">特异性权重合并计算 (Specificity)</text>
+
+    <!-- 流程 step -->
+    <g transform="translate(14, 68)">
+      <rect width="192" height="42" rx="4" fill="#ffffff" stroke="#fde68a" />
+      <text x="10" y="18" font-size="11" font-weight="700" fill="#92400e">解析全局 CSS 样式表</text>
+      <text x="10" y="32" font-size="10" fill="#78350f">提取所有 class 与标签规则</text>
+    </g>
+    <path d="M 110 115 L 110 128" class="arrow" />
+
+    <g transform="translate(14, 134)">
+      <rect width="192" height="48" rx="4" fill="#ffffff" stroke="#fde68a" />
+      <text x="10" y="18" font-size="11" font-weight="700" fill="#92400e">计算 CSS 权重层叠</text>
+      <text x="10" y="32" font-size="10" fill="#78350f">ID(100) > Class(10) > Tag(1)</text>
+    </g>
+    <path d="M 110 187 L 110 200" class="arrow" />
+
+    <g transform="translate(14, 206)">
+      <rect width="192" height="58" rx="4" fill="#fef9c3" stroke="#eab308" />
+      <text x="10" y="18" font-size="11" font-weight="700" fill="#854d0e">内联注入每个标签</text>
+      <text x="10" y="34" font-size="10" fill="#713f12">彻底移除外部 &lt;style&gt; 标签</text>
+      <text x="10" y="48" font-size="10" font-weight="600" fill="#15803d">100% 免疫宿主沙箱样式过滤</text>
+    </g>
+  </g>
+
+  <!-- 右侧：宿主粘贴沙箱 (微信公众号 / 知乎 / 语雀) -->
+  <g transform="translate(565, 85)">
+    <rect width="220" height="280" class="box-dest" />
+    <text x="18" y="30" font-family="sans-serif" font-size="13.5" font-weight="700" fill="#166534">🎯 目标宿主富文本沙箱</text>
+    <text x="18" y="50" font-size="11" fill="#15803d">微信后台、知乎专栏、富文本框</text>
+
+    <!-- 微信策略演示 -->
+    <g transform="translate(14, 68)">
+      <rect width="192" height="68" rx="4" fill="#fee2e2" stroke="#fca5a5" />
+      <text x="10" y="20" font-size="11" font-weight="700" fill="#b91c1c">❌ 宿主物理强力剥离</text>
+      <text x="10" y="36" font-size="10" fill="#991b1b">• 瞬间丢弃外部 &lt;style&gt; 样式</text>
+      <text x="10" y="50" font-size="10" fill="#991b1b">• 丢弃 CSS 外部文件引用</text>
+      <text x="10" y="64" font-size="9.5" fill="#7f1d1d">未做行内化时，文章瞬间变纯文本裸排！</text>
+    </g>
+
+    <g transform="translate(14, 154)">
+      <rect width="192" height="106" rx="4" fill="#dcfce7" stroke="#86efac" />
+      <text x="10" y="22" font-size="11" font-weight="700" fill="#15803d">✅ 行内化后完美呈现</text>
+      <text x="10" y="40" font-size="10" fill="#166534">• 保留字号、行距与主题配色</text>
+      <text x="10" y="56" font-size="10" fill="#166534">• 代码高亮语法背景 100% 留存</text>
+      <text x="10" y="72" font-size="10" fill="#166534">• Callout 提示块边框圆角完整</text>
+      <text x="10" y="92" font-size="10" font-weight="700" fill="#15803d">所见即所得，一键排版发布成功</text>
+    </g>
+  </g>
+
+  <!-- 连接箭头 -->
+  <path d="M 282 225 L 315 225" class="arrow" />
+  <path d="M 535 225 L 565 225" class="arrow" />
+</svg>

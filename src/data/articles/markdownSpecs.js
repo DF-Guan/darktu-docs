@@ -40,6 +40,8 @@ Gruber 的初代实现 \`Markdown.pl\` 仅是一份不到 1,000 行的 Perl 正�
 
 ## 3. 解析器架构分层：从正则替换到 AST 抽象语法树
 
+![现代 Markdown 解析器架构 · 双阶段编译与 AST 语法树流水线](./assets/diagrams/markdown-ast-pipeline.svg)
+
 现代工业级 Markdown 引擎彻底摒弃了简单正则替换，采用经典的双阶段编译管线：
 
 \`\`\`mermaid

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box-card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12.5px; fill: #475569; }
+      .section-head { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13.5px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="820" height="400" rx="10" class="bg" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <text x="32" y="34" class="title">数字文档无障碍 (A11y) · WCAG 2.2 色彩对比度与色盲安全设计模型</text>
+  <text x="32" y="54" class="desc">排版不仅要好看，更要让所有读者（包括视力受损、弱视、色盲色弱群体）无障碍获取信息。</text>
+
+  <!-- 左半部分：WCAG 色彩对比度三级阶梯 (Contrast Ratio) -->
+  <g transform="translate(32, 85)">
+    <rect width="365" height="280" class="box-card" />
+    <text x="20" y="30" class="section-head" fill="#0f172a">📐 色彩对比度比值 (Contrast Ratio)</text>
+
+    <!-- 1. 不合格演示 (1.8:1) -->
+    <g transform="translate(18, 50)">
+      <rect width="329" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1" />
+      <text x="16" y="26" font-size="13" font-weight="500" fill="#94a3b8">浅灰背景上的浅灰字：无法阅读</text>
+      <text x="16" y="46" font-size="11" font-weight="700" fill="#e11d48">❌ 对比度 1.8:1 (严重违背 WCAG 标准)</text>
+    </g>
+
+    <!-- 2. AA 级标准合格 (4.5:1) -->
+    <g transform="translate(18, 120)">
+      <rect width="329" height="64" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5" />
+      <text x="16" y="28" font-size="14" font-weight="500" fill="#334155">正文文字清晰明朗，边缘锐利</text>
+      <text x="16" y="50" font-size="11" font-weight="700" fill="#2563eb">✅ 对比度 4.5:1 (达成 WCAG AA 级基线)</text>
+    </g>
+
+    <!-- 3. AAA 级高可读 (7.0:1) -->
+    <g transform="translate(18, 196)">
+      <rect width="329" height="64" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.8" />
+      <text x="16" y="28" font-size="14" font-weight="700" fill="#0f172a">高反差深色正文，户外强光依然清晰</text>
+      <text x="16" y="50" font-size="11" font-weight="700" fill="#15803d">🌟 对比度 7.0:1+ (达成 WCAG AAA 最高级别)</text>
+    </g>
+  </g>
+
+  <!-- 右半部分：色盲安全双重线索 (Dual Visual Cues) -->
+  <g transform="translate(422, 85)">
+    <rect width="365" height="280" class="box-card" />
+    <text x="20" y="30" class="section-head" fill="#0f172a">👁️ 色盲友好：拒绝“唯色彩是论”</text>
+
+    <!-- 错误范式：仅靠颜色 -->
+    <g transform="translate(18, 50)">
+      <rect width="329" height="96" rx="6" fill="#fff1f2" stroke="#fecaca" />
+      <text x="14" y="22" font-size="11.5" font-weight="700" fill="#be123c">❌ 危险设计：仅凭红绿颜色区分状态</text>
+      
+      <circle cx="28" cy="46" r="8" fill="#ef4444" />
+      <text x="44" y="50" font-size="12" fill="#334155">发布已终止</text>
+
+      <circle cx="160" cy="46" r="8" fill="#22c55e" />
+      <text x="176" y="50" font-size="12" fill="#334155">发布已成功</text>
+
+      <text x="14" y="82" font-size="10.5" fill="#e11d48">⚠️ 红绿色盲读者（全球约 8% 男性）眼中，两个圆点完全相同！</text>
+    </g>
+
+    <!-- 正确范式：颜色 + 图标 + 明确文本三维保障 -->
+    <g transform="translate(18, 158)">
+      <rect width="329" height="102" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5" />
+      <text x="14" y="22" font-size="11.5" font-weight="700" fill="#15803d">✅ 标准无障碍：图形 + 颜色 + 文字标签</text>
+
+      <rect x="14" y="36" width="140" height="28" rx="4" fill="#fee2e2" stroke="#fca5a5" />
+      <text x="24" y="54" font-size="12" font-weight="700" fill="#b91c1c">[x] 终止发布</text>
+
+      <rect x="164" y="36" width="140" height="28" rx="4" fill="#dcfce7" stroke="#86efac" />
+      <text x="174" y="54" font-size="12" font-weight="700" fill="#15803d">[✓] 发布成功</text>
+
+      <text x="14" y="88" font-size="10.5" fill="#15803d">✨ 即使完全剥离色彩，符号与文字依然清晰传达无歧义状态！</text>
+    </g>
+  </g>
+</svg>

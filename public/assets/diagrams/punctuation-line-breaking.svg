@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box-error { fill: #fff1f2; stroke: #f43f5e; stroke-width: 1.5; rx: 8; }
+      .box-correct { fill: #f0fdf4; stroke: #22c55e; stroke-width: 1.5; rx: 8; }
+      .box-squeeze { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8; }
+      .cell { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; }
+      .cell-err { fill: #ffe4e6; stroke: #f43f5e; stroke-width: 1.5; }
+      .cell-cor { fill: #dcfce7; stroke: #22c55e; stroke-width: 1.5; }
+      .cell-sqz { fill: #e0f2fe; stroke: #0284c7; stroke-width: 1; }
+      .text-char { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 18px; fill: #1e293b; text-anchor: middle; dominant-baseline: central; font-weight: 500; }
+      .text-punc { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 20px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+      .punc-err { fill: #e11d48; }
+      .punc-cor { fill: #16a34a; }
+      .label-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .label-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12.5px; fill: #475569; }
+      .tag-err { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11.5px; font-weight: 700; fill: #be123c; }
+      .tag-cor { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11.5px; font-weight: 700; fill: #15803d; }
+    </style>
+  </defs>
+
+  <rect width="820" height="400" rx="10" class="bg" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <text x="32" y="34" class="label-title">中文标点符号规范 · 避头尾禁则与标点挤压计算模型</text>
+  <text x="32" y="54" class="label-sub">根据 GB/T 15834 规定：句末与行中点号禁止置于行首，前引号与前括号禁止置于行末。</text>
+
+  <!-- 1. 错误避头示范 (Forbidden Line-Break) -->
+  <g transform="translate(32, 75)">
+    <rect width="365" height="135" class="box-error" />
+    <text x="16" y="24" class="tag-err">❌ 违规折行：避头点号误落行首</text>
+
+    <!-- 第一行字符网格 -->
+    <g transform="translate(16, 38)">
+      <rect x="0" y="0" width="32" height="32" class="cell" /><text x="16" y="16" class="text-char">中</text>
+      <rect x="34" y="0" width="32" height="32" class="cell" /><text x="50" y="16" class="text-char">文</text>
+      <rect x="68" y="0" width="32" height="32" class="cell" /><text x="84" y="16" class="text-char">排</text>
+      <rect x="102" y="0" width="32" height="32" class="cell" /><text x="118" y="16" class="text-char">版</text>
+      <rect x="136" y="0" width="32" height="32" class="cell" /><text x="152" y="16" class="text-char">网</text>
+      <rect x="170" y="0" width="32" height="32" class="cell" /><text x="186" y="16" class="text-char">格</text>
+      <rect x="204" y="0" width="32" height="32" class="cell" /><text x="220" y="16" class="text-char">规</text>
+      <rect x="238" y="0" width="32" height="32" class="cell" /><text x="254" y="16" class="text-char">范</text>
+    </g>
+
+    <!-- 第二行：逗号孤零零在行首 -->
+    <g transform="translate(16, 76)">
+      <rect x="0" y="0" width="32" height="32" class="cell-err" /><text x="16" y="16" class="text-punc punc-err">，</text>
+      <rect x="34" y="0" width="32" height="32" class="cell" /><text x="50" y="16" class="text-char">避</text>
+      <rect x="68" y="0" width="32" height="32" class="cell" /><text x="84" y="16" class="text-char">免</text>
+      <rect x="102" y="0" width="32" height="32" class="cell" /><text x="118" y="16" class="text-char">孤</text>
+      <rect x="136" y="0" width="32" height="32" class="cell" /><text x="152" y="16" class="text-char">行</text>
+      <rect x="170" y="0" width="32" height="32" class="cell" /><text x="186" y="16" class="text-char">空</text>
+      <rect x="204" y="0" width="32" height="32" class="cell" /><text x="220" y="16" class="text-char">白</text>
+      <rect x="238" y="0" width="32" height="32" class="cell" /><text x="254" y="16" class="text-char">。</text>
+    </g>
+    <text x="16" y="124" font-size="11" fill="#e11d48">行首出现逗号/句号/右括号，破坏左侧垂直汉字轴线。</text>
+  </g>
+
+  <!-- 2. 正确避头示范 (Correct Line-Break) -->
+  <g transform="translate(420, 75)">
+    <rect width="365" height="135" class="box-correct" />
+    <text x="16" y="24" class="tag-cor">✅ 合规排版：标点随前字悬挂或一同折行</text>
+
+    <!-- 第一行：将前一字随标点带到下一行，或行末悬挂标点 -->
+    <g transform="translate(16, 38)">
+      <rect x="0" y="0" width="32" height="32" class="cell" /><text x="16" y="16" class="text-char">中</text>
+      <rect x="34" y="0" width="32" height="32" class="cell" /><text x="50" y="16" class="text-char">文</text>
+      <rect x="68" y="0" width="32" height="32" class="cell" /><text x="84" y="16" class="text-char">排</text>
+      <rect x="102" y="0" width="32" height="32" class="cell" /><text x="118" y="16" class="text-char">版</text>
+      <rect x="136" y="0" width="32" height="32" class="cell" /><text x="152" y="16" class="text-char">网</text>
+      <rect x="170" y="0" width="32" height="32" class="cell" /><text x="186" y="16" class="text-char">格</text>
+      <rect x="204" y="0" width="32" height="32" class="cell" /><text x="220" y="16" class="text-char">规</text>
+      <rect x="238" y="0" width="32" height="32" class="cell" /><text x="254" y="16" class="text-char">范</text>
+      <!-- 悬挂标点在行末 -->
+      <rect x="272" y="0" width="22" height="32" class="cell-cor" /><text x="283" y="16" class="text-punc punc-cor">，</text>
+    </g>
+
+    <!-- 第二行：整齐汉字开头 -->
+    <g transform="translate(16, 76)">
+      <rect x="0" y="0" width="32" height="32" class="cell" /><text x="16" y="16" class="text-char">避</text>
+      <rect x="34" y="0" width="32" height="32" class="cell" /><text x="50" y="16" class="text-char">免</text>
+      <rect x="68" y="0" width="32" height="32" class="cell" /><text x="84" y="16" class="text-char">孤</text>
+      <rect x="102" y="0" width="32" height="32" class="cell" /><text x="118" y="16" class="text-char">行</text>
+      <rect x="136" y="0" width="32" height="32" class="cell" /><text x="152" y="16" class="text-char">空</text>
+      <rect x="170" y="0" width="32" height="32" class="cell" /><text x="186" y="16" class="text-char">白</text>
+      <rect x="204" y="0" width="22" height="32" class="cell-cor" /><text x="215" y="16" class="text-punc punc-cor">。</text>
+    </g>
+    <text x="16" y="124" font-size="11" fill="#15803d">行首永远保持汉字饱满对齐，标点在行尾实行微调悬挂。</text>
+  </g>
+
+  <!-- 3. 连续标点挤压排版模型 (Punctuation Squeeze) -->
+  <g transform="translate(32, 226)">
+    <rect width="753" height="150" class="box-squeeze" />
+    <text x="20" y="26" font-size="13.5" font-weight="700" fill="#0f172a">📐 连续标点挤压算法 (Punctuation Squeeze Rule)</text>
+    
+    <!-- 未挤压对比 (各占 1em，产生 1.5em 空洞) -->
+    <g transform="translate(24, 44)">
+      <text x="0" y="22" font-size="12" font-weight="600" fill="#64748b">未挤压 (各占 1.0 em):</text>
+      <rect x="140" y="0" width="40" height="36" class="cell" /><text x="160" y="18" class="text-char">好</text>
+      <rect x="182" y="0" width="40" height="36" class="cell" /><text x="202" y="18" class="text-punc">”</text>
+      <rect x="224" y="0" width="40" height="36" class="cell" /><text x="244" y="18" class="text-punc">，</text>
+      <rect x="266" y="0" width="40" height="36" class="cell" /><text x="286" y="18" class="text-char">他</text>
+      <text x="320" y="22" font-size="11.5" fill="#e11d48">⚠️ 闭引号与逗号连续出现，中间产生令读者难堪的巨大空白</text>
+    </g>
+
+    <!-- 挤压后 (各占 0.5em，合占 1.0 em) -->
+    <g transform="translate(24, 95)">
+      <text x="0" y="22" font-size="12" font-weight="600" fill="#0369a1">标准挤压 (各占 0.5 em):</text>
+      <rect x="140" y="0" width="40" height="36" class="cell" /><text x="160" y="18" class="text-char">好</text>
+      <rect x="182" y="0" width="20" height="36" class="cell-sqz" /><text x="192" y="18" class="text-punc" fill="#0369a1">”</text>
+      <rect x="204" y="0" width="20" height="36" class="cell-sqz" /><text x="214" y="18" class="text-punc" fill="#0369a1">，</text>
+      <rect x="226" y="0" width="40" height="36" class="cell" /><text x="246" y="18" class="text-char">他</text>
+      <text x="280" y="22" font-size="11.5" fill="#0369a1">✨ 两点号间距挤压为半角宽度（0.5em），合占一个完整汉字网格</text>
+    </g>
+  </g>
+</svg>

@@ -193,6 +193,8 @@ flowchart TD
 
 ## 3. 色彩对比度与色盲安全调色盘
 
+![数字文档无障碍 (A11y) · WCAG 2.2 色彩对比度与色盲安全设计模型](./assets/diagrams/wcag-contrast-colorblind.svg)
+
 WCAG 2.2 规定了严格的文本与背景对比度比值（Contrast Ratio）：
 
 | 合规级别 | 普通正文文本 (小于 18pt) | 大号文字 (大于 18pt 或加粗 14pt) | 图标与边框等 UI 组件 |

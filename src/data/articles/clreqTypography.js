@@ -21,6 +21,8 @@ export const CLREQ_TYPOGRAPHY_ARTICLES = {
 - **传统宋体/明体**：字面率约为 85%~90%，字间保留天然白虚线呼吸感，适合纸质书刊长文阅读；
 - **现代屏显黑体（如苹方、思源黑体）**：字面率扩大至 92%~95%，在高分屏上视觉冲击力强，但若行距不足极易造成拥挤与视觉疲劳。相关跨语言混排可参阅 [盘古之白中英文混排规范](#/pangu-spacing)。
 
+![W3C 中文排版需求 (CLReq) · 汉字网格与字面框结构图解](./assets/diagrams/clreq-embox-grid.svg)
+
 ---
 
 ## 2. 横排与竖排的字行行距基准
@@ -122,6 +124,8 @@ export function panguSpacing(text) {
 ---
 
 ## 2. 避头尾法则 (Kinsoku Shori / Line Breaking Rules)
+
+![中文标点符号规范 · 避头尾禁则与标点挤压计算模型](./assets/diagrams/punctuation-line-breaking.svg)
 
 排版引擎在自动折行时，必须遵守严格的物理禁则：
 
@@ -232,6 +236,8 @@ flowchart LR
 ---
 
 ## 4. 现代动态分包切片：unicode-range 方案
+
+![Web 中文字体优化 · 基于 CSS unicode-range 的动态切片分包模型](./assets/diagrams/font-subset-unicode-range.svg)
 
 对于知识库、维基百科等用户会不断更新、无法静态预测字符集的系统，现代标准方案是基于 **CSS \`unicode-range\`** 的多包切片：
 

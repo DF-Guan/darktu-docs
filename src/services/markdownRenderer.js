@@ -60,7 +60,12 @@ function renderInline(text) {
   // 8. 上标 X^2^
   html = html.replace(/\^([^^]+)\^/g, "<sup>$1</sup>");
 
-  // 9. 超链接 [text](url)
+  // 9. 图片 ![alt](url)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, url) => {
+    return `<figure class="docs-figure"><img src="${url}" alt="${escapeHtml(alt)}" class="docs-image" loading="lazy" />${alt ? `<figcaption class="docs-figcaption">${escapeHtml(alt)}</figcaption>` : ""}</figure>`;
+  });
+
+  // 10. 超链接 [text](url)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, label, url) => {
     const isExternal = url.startsWith("http");
     const isWiki = url.startsWith("#/");
@@ -241,7 +246,21 @@ export function renderMarkdown(markdown) {
       continue;
     }
 
-    // 9. 空行与普通段落
+    // 9. 独立单行图片 ![alt](url)
+    const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (imgMatch) {
+      const alt = imgMatch[1];
+      const url = imgMatch[2];
+      output.push(`
+        <figure class="docs-figure">
+          <img src="${url}" alt="${escapeHtml(alt)}" class="docs-image" loading="lazy" />
+          ${alt ? `<figcaption class="docs-figcaption">${escapeHtml(alt)}</figcaption>` : ""}
+        </figure>
+      `);
+      continue;
+    }
+
+    // 10. 空行与普通段落
     if (!line.trim()) {
       continue;
     }

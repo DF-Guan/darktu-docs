@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box-client { fill: #eff6ff; stroke: #3b82f6; stroke-width: 1.8; rx: 8; }
+      .box-server { fill: #fef3c7; stroke: #f59e0b; stroke-width: 1.8; rx: 8; }
+      .box-s3 { fill: #f0fdf4; stroke: #22c55e; stroke-width: 1.8; rx: 8; }
+      .box-old { fill: #fff1f2; stroke: #f43f5e; stroke-width: 1.5; rx: 8; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12.5px; fill: #475569; }
+      .arrow { stroke: #2563eb; stroke-width: 2; marker-end: url(#s3-arrow); fill: none; }
+      .arrow-ret { stroke: #16a34a; stroke-width: 2; stroke-dasharray: 4,4; marker-end: url(#s3-ret-arrow); fill: none; }
+      .step-text { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11px; font-weight: 600; fill: #1e40af; }
+    </style>
+    <marker id="s3-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2563eb" />
+    </marker>
+    <marker id="s3-ret-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a" />
+    </marker>
+  </defs>
+
+  <rect width="820" height="400" rx="10" class="bg" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <text x="32" y="34" class="title">现代图床架构 · 客户端预签名直传 (Presigned Upload) 拓扑流</text>
+  <text x="32" y="54" class="desc">传统服务端中转会耗尽应用服务器带宽与内存；预签名直传将二进制大文件完全卸载至对象存储。</text>
+
+  <!-- 传统中转弊端警示条 (对比) -->
+  <g transform="translate(32, 75)">
+    <rect width="756" height="54" class="box-old" />
+    <text x="16" y="24" font-size="12" font-weight="700" fill="#be123c">⚠️ 传统服务端中转模式弊端：</text>
+    <text x="16" y="42" font-size="11.5" fill="#9f1239">客户端上传 10MB 图片 -> 业务服务器接收 (内存占用 + 下行带宽) -> 服务器再上传到 S3 (上行带宽) = 服务器承受双倍带宽峰值与宕机风险！</text>
+  </g>
+
+  <!-- 现代架构三角色 -->
+  <!-- 角色 1: 客户端 (Web / App / Electron) -->
+  <g transform="translate(32, 155)">
+    <rect width="180" height="210" class="box-client" />
+    <text x="20" y="32" font-size="14" font-weight="700" fill="#1e40af">💻 客户端 (Browser)</text>
+    <text x="20" y="52" font-size="11" fill="#64748b">本地 Markdown 编辑器</text>
+
+    <rect x="14" y="70" width="152" height="42" rx="4" fill="#ffffff" stroke="#bfdbfe" />
+    <text x="22" y="88" font-size="10.5" font-weight="600" fill="#1e40af">1. 本地图片拖拽/粘贴</text>
+    <text x="22" y="102" font-size="9.5" fill="#64748b">计算 SHA-256 与文件类型</text>
+
+    <rect x="14" y="122" width="152" height="42" rx="4" fill="#ffffff" stroke="#bfdbfe" />
+    <text x="22" y="140" font-size="10.5" font-weight="600" fill="#1e40af">4. 获取直传成功响应</text>
+    <text x="22" y="154" font-size="9.5" fill="#15803d">自动生成 Markdown 链接</text>
+
+    <rect x="14" y="174" width="152" height="26" rx="4" fill="#dbeafe" />
+    <text x="22" y="191" font-size="10" font-weight="600" fill="#1d4ed8">![图片](https://cdn...)</text>
+  </g>
+
+  <!-- 角色 2: API 业务鉴权服务 -->
+  <g transform="translate(320, 155)">
+    <rect width="180" height="210" class="box-server" />
+    <text x="20" y="32" font-size="14" font-weight="700" fill="#92400e">⚡ API 鉴权微服务</text>
+    <text x="20" y="52" font-size="11" fill="#78350f">极轻量，不接触任何图片文件</text>
+
+    <rect x="14" y="70" width="152" height="58" rx="4" fill="#ffffff" stroke="#fde68a" />
+    <text x="22" y="88" font-size="10.5" font-weight="600" fill="#b45309">2. 校验用户身份</text>
+    <text x="22" y="104" font-size="9.5" fill="#78350f">验证 JWT Token 权限</text>
+    <text x="22" y="118" font-size="9.5" fill="#78350f">检查文件名与格式白名单</text>
+
+    <rect x="14" y="138" width="152" height="58" rx="4" fill="#ffffff" stroke="#fde68a" />
+    <text x="22" y="156" font-size="10.5" font-weight="600" fill="#b45309">3. 生成临时签名 URL</text>
+    <text x="22" y="172" font-size="9.5" fill="#78350f">基于 AWS SigV4 算法</text>
+    <text x="22" y="186" font-size="9.5" fill="#15803d">有效期通常限制为 15 分钟</text>
+  </g>
+
+  <!-- 角色 3: S3 / Cloudflare R2 / 阿里云 OSS -->
+  <g transform="translate(608, 155)">
+    <rect width="180" height="210" class="box-s3" />
+    <text x="20" y="32" font-size="14" font-weight="700" fill="#166534">🪣 对象存储 S3 / R2</text>
+    <text x="20" y="52" font-size="11" fill="#15803d">全球海量弹性分布式存储</text>
+
+    <rect x="14" y="70" width="152" height="60" rx="4" fill="#ffffff" stroke="#86efac" />
+    <text x="22" y="88" font-size="10.5" font-weight="600" fill="#15803d">直传接收与分片合并</text>
+    <text x="22" y="104" font-size="9.5" fill="#475569">客户端直接发起 HTTP PUT</text>
+    <text x="22" y="118" font-size="9.5" fill="#15803d">不经过业务服务器任何中转</text>
+
+    <rect x="14" y="140" width="152" height="56" rx="4" fill="#dcfce7" />
+    <text x="22" y="158" font-size="10.5" font-weight="700" fill="#166534">全球 CDN 边缘加速</text>
+    <text x="22" y="174" font-size="9.5" fill="#15803d">Cloudflare / CloudFront</text>
+    <text x="22" y="188" font-size="9.5" fill="#15803d">毫秒级全球缓存与防盗链</text>
+  </g>
+
+  <!-- 通信连线 1: 请求签名 -->
+  <path d="M 212 210 L 320 210" class="arrow" />
+  <text x="266" y="202" font-size="10" font-weight="700" fill="#2563eb" text-anchor="middle">① 获取预签名</text>
+
+  <!-- 通信连线 2: 返回签名 -->
+  <path d="M 320 235 L 212 235" class="arrow-ret" />
+  <text x="266" y="250" font-size="10" font-weight="700" fill="#16a34a" text-anchor="middle">② 返回带签名 URL</text>
+
+  <!-- 通信连线 3: 客户端直接跨越直传 S3 -->
+  <path d="M 212 300 C 350 340, 500 340, 608 300" class="arrow" stroke="#0284c7" stroke-width="2.5" />
+  <text x="410" y="345" font-size="11" font-weight="700" fill="#0284c7" text-anchor="middle">③ 客户端直接并发 PUT 二进制文件至 S3/R2 (服务器 0 宽带消耗)</text>
+</svg>

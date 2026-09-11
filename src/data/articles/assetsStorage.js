@@ -17,6 +17,8 @@ export const ASSETS_STORAGE_ARTICLES = {
 - **传输耗时翻倍**（用户 -> 服务器 -> S3）；
 - **服务器内存溢出风险**。
 
+![现代图床架构 · 客户端预签名直传 (Presigned Upload) 拓扑流](./assets/diagrams/s3-presigned-upload-flow.svg)
+
 ### 现代工业标准：预签名直传 (Presigned URL Upload)
 \`\`\`mermaid
 sequenceDiagram

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .step-box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .step-core { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; rx: 8; }
+      .step-ast { fill: #faf5ff; stroke: #a855f7; stroke-width: 2; rx: 8; }
+      .step-out { fill: #f0fdf4; stroke: #22c55e; stroke-width: 2; rx: 8; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12.5px; fill: #475569; }
+      .box-head { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-weight: 700; }
+      .box-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11px; fill: #475569; line-height: 1.4; }
+      .flow-arrow { stroke: #64748b; stroke-width: 2; marker-end: url(#f-arrow); fill: none; }
+      .badge-tag { font-family: ui-monospace, monospace; font-size: 10px; font-weight: 600; padding: 2px 6px; rx: 3; }
+    </style>
+    <marker id="f-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#64748b" />
+    </marker>
+  </defs>
+
+  <rect width="820" height="400" rx="10" class="bg" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <text x="32" y="34" class="title">现代 Markdown 解析器架构 · 双阶段编译与 AST 语法树流水线</text>
+  <text x="32" y="54" class="desc">彻底消除早期纯正则表达式替换的二义性与嵌套死锁，CommonMark 工业级两阶段 AST 解析管线。</text>
+
+  <!-- 阶段 1: 原始输入 -->
+  <g transform="translate(32, 85)">
+    <rect width="135" height="150" class="step-box" />
+    <rect x="12" y="12" width="60" height="20" rx="4" fill="#e2e8f0" />
+    <text x="42" y="26" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">STAGE 1</text>
+    <text x="12" y="52" class="box-head" fill="#0f172a">Markdown 源码</text>
+    <text x="12" y="74" class="box-body">原始纯文本流</text>
+    <text x="12" y="92" class="box-body">• 标题定界符 #</text>
+    <text x="12" y="110" class="box-body">• 列表嵌套 - [ ]</text>
+    <text x="12" y="128" class="box-body">• 代码围栏 ```</text>
+    <text x="12" y="146" class="box-body">• LaTeX 公式 $</text>
+  </g>
+
+  <!-- 箭头 1 -->
+  <path d="M 167 160 L 195 160" class="flow-arrow" />
+
+  <!-- 阶段 2: 块级状态机解析 (Block Parser) -->
+  <g transform="translate(195, 85)">
+    <rect width="175" height="150" class="step-core" />
+    <rect x="12" y="12" width="60" height="20" rx="4" fill="#bfdbfe" />
+    <text x="42" y="26" font-size="10" font-weight="700" fill="#1d4ed8" text-anchor="middle">STAGE 2</text>
+    <text x="12" y="52" class="box-head" fill="#1e40af">块级状态机 (Block)</text>
+    <text x="12" y="74" class="box-body">逐行扫描建立文档骨架：</text>
+    <text x="12" y="94" class="box-body">1. 容器块 (Container)</text>
+    <text x="24" y="110" font-size="10.5" fill="#2563eb">Blockquote / List</text>
+    <text x="12" y="130" class="box-body">2. 叶子块 (Leaf)</text>
+    <text x="24" y="146" font-size="10.5" fill="#2563eb">Heading / Code / Para</text>
+  </g>
+
+  <!-- 箭头 2 -->
+  <path d="M 370 160 L 398 160" class="flow-arrow" />
+
+  <!-- 阶段 3: 行内词法与定界符栈 (Inline Parser) -->
+  <g transform="translate(398, 85)">
+    <rect width="180" height="150" class="step-core" />
+    <rect x="12" y="12" width="60" height="20" rx="4" fill="#bfdbfe" />
+    <text x="42" y="26" font-size="10" font-weight="700" fill="#1d4ed8" text-anchor="middle">STAGE 3</text>
+    <text x="12" y="52" class="box-head" fill="#1e40af">行内定界符栈 (Inline)</text>
+    <text x="12" y="74" class="box-body">解析叶子块内的字符流：</text>
+    <text x="12" y="94" class="box-body">• 定界符双向栈消除</text>
+    <text x="24" y="110" font-size="10.5" fill="#2563eb">**粗体** 与 *斜体*</text>
+    <text x="12" y="130" class="box-body">• 行内代码与超链接</text>
+    <text x="24" y="146" font-size="10.5" fill="#2563eb">[链接](url) / 脚注</text>
+  </g>
+
+  <!-- 箭头 3 -->
+  <path d="M 578 160 L 606 160" class="flow-arrow" />
+
+  <!-- 阶段 4: 抽象语法树 AST 节点树 -->
+  <g transform="translate(606, 85)">
+    <rect width="182" height="150" class="step-ast" />
+    <rect x="12" y="12" width="60" height="20" rx="4" fill="#e9d5ff" />
+    <text x="42" y="26" font-size="10" font-weight="700" fill="#7e22ce" text-anchor="middle">STAGE 4</text>
+    <text x="12" y="52" class="box-head" fill="#6b21a8">抽象语法树 (AST)</text>
+    <text x="12" y="74" class="box-body">标准化 JSON 树形结构：</text>
+    <text x="12" y="94" font-family="monospace" font-size="10" fill="#7e22ce">{ type: "heading",</text>
+    <text x="20" y="110" font-family="monospace" font-size="10" fill="#7e22ce">  depth: 2,</text>
+    <text x="20" y="126" font-family="monospace" font-size="10" fill="#7e22ce">  children: [...] }</text>
+    <text x="12" y="146" font-size="10.5" font-weight="600" fill="#7e22ce">结构化、可遍历、可篡改</text>
+  </g>
+
+  <!-- 下方阶段 5: 插件钩子与最终输出 -->
+  <g transform="translate(32, 260)">
+    <rect width="756" height="115" class="step-out" />
+    <text x="20" y="28" font-size="13.5" font-weight="700" fill="#15803d">🚀 STAGE 5: 插件生态拦截链 (Transformer Hooks) 与终态安全输出</text>
+
+    <!-- 插件 1: 数学公式 -->
+    <g transform="translate(20, 44)">
+      <rect width="168" height="52" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1" />
+      <text x="12" y="22" font-size="12" font-weight="700" fill="#15803d">KaTeX 公式插件</text>
+      <text x="12" y="38" font-size="10.5" fill="#64748b">行内/块级 LaTeX 渲染</text>
+    </g>
+
+    <!-- 插件 2: Mermaid 图表 -->
+    <g transform="translate(208, 44)">
+      <rect width="168" height="52" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1" />
+      <text x="12" y="22" font-size="12" font-weight="700" fill="#15803d">Mermaid 矢量图</text>
+      <text x="12" y="38" font-size="10.5" fill="#64748b">代码块编译为 SVG 拓扑</text>
+    </g>
+
+    <!-- 插件 3: DOMPurify 清洗 -->
+    <g transform="translate(396, 44)">
+      <rect width="168" height="52" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1" />
+      <text x="12" y="22" font-size="12" font-weight="700" fill="#15803d">DOMPurify 安全沙箱</text>
+      <text x="12" y="38" font-size="10.5" fill="#64748b">过滤恶意 XSS 脚本与属性</text>
+    </g>
+
+    <!-- 输出: 终态 HTML -->
+    <g transform="translate(584, 44)">
+      <rect width="152" height="52" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5" />
+      <text x="12" y="22" font-size="12" font-weight="700" fill="#166534">终态 HTML 视图</text>
+      <text x="12" y="38" font-size="10.5" fill="#166534">语义化 DOM 渲染交付</text>
+    </g>
+  </g>
+</svg>

@@ -73,7 +73,22 @@ async function runTests() {
   const logoPath = path.resolve(__dirname, "../public/logo-128.png");
   assert(fs.existsSync(logoPath), "logo-128.png must physically exist in public/");
 
-  console.log(`✅ All ${ALL_DOCS.length} Knowledge Base Articles, Wikilinks, and Functions 100% Verified!`);
+  // 7. 验证全部高清技术矢量插图物理存在
+  const diagrams = [
+    "clreq-embox-grid.svg",
+    "punctuation-line-breaking.svg",
+    "markdown-ast-pipeline.svg",
+    "clipboard-mime-architecture.svg",
+    "s3-presigned-upload-flow.svg",
+    "font-subset-unicode-range.svg",
+    "wcag-contrast-colorblind.svg",
+  ];
+  diagrams.forEach((d) => {
+    const p = path.resolve(__dirname, `../public/assets/diagrams/${d}`);
+    assert(fs.existsSync(p), `Diagram ${d} must physically exist in public/assets/diagrams/`);
+  });
+
+  console.log(`✅ All ${ALL_DOCS.length} Knowledge Base Articles, Wikilinks, Diagrams, and Functions 100% Verified!`);
   process.exit(0);
 }
 
