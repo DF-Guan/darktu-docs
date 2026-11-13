@@ -32,6 +32,8 @@ jobs:
       - run: npm ci
       - name: Agent-neutral unit tests
         run: node --test test/agent_sync.test.mjs
+      - name: Existing rule files must be unchanged in this PR
+        run: git diff --exit-code origin/main...HEAD -- agent.md docs/feature_map.md
       - name: Existing project invariants
         run: npm test
       - name: Existing production build
