@@ -1,0 +1,42 @@
+name: Cross-agent collaboration pilot
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - AGENTS.md
+      - docs/agent-sync.md
+      - scripts/agent-sync.mjs
+      - test/agent_sync.test.mjs
+      - test/agent_sync_live.test.mjs
+      - .github/workflows/agent-sync-pilot.yml
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  verify:
+    if: github.head_ref == 'codex/agent-sync-preflight-pilot'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Agent-neutral unit tests
+        run: node --test test/agent_sync.test.mjs
+      - name: Existing project invariants
+        run: npm test
+      - name: Existing production build
+        run: npm run build
+      - name: Real remote PR and local-dirty protection exercise
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node test/agent_sync_live.test.mjs
