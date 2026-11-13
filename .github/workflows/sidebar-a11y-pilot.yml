@@ -1,0 +1,28 @@
+name: Sidebar accessibility pilot verification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - src/index.js
+      - src/styles/sidebar.css
+      - test/sidebar_accessibility.test.js
+      - package.json
+      - .github/workflows/sidebar-a11y-pilot.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.head_ref == 'codex/modern-web-sidebar-a11y'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
