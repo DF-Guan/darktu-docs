@@ -59,9 +59,9 @@ test("remote conflict checker sees other PR files and excludes its own PR", asyn
   const responses = {
     "/repos/DF-Guan/darktu-docs/pulls?state=open&per_page=100": [
       { number: 2, title: "sidebar fix", html_url: "https://github.com/DF-Guan/darktu-docs/pull/2",
-        head: { ref: "codex/modern-web-sidebar-a11y", repo: { full_name: "DF-Guan/darktu-docs" } } },
+        head: { ref: "codex/modern-web-sidebar-a11y", sha: "pr2-head", repo: { full_name: "DF-Guan/darktu-docs" } } },
       { number: 3, title: "preflight", html_url: "https://github.com/DF-Guan/darktu-docs/pull/3",
-        head: { ref: "codex/agent-sync-preflight-pilot", repo: { full_name: "DF-Guan/darktu-docs" } } },
+        head: { ref: "codex/agent-sync-preflight-pilot", sha: "pr3-head", repo: { full_name: "DF-Guan/darktu-docs" } } },
     ],
     "/repos/DF-Guan/darktu-docs/issues?state=open&per_page=100": [
       { number: 1, title: "modernize", html_url: "https://github.com/DF-Guan/darktu-docs/issues/1" },
@@ -69,6 +69,9 @@ test("remote conflict checker sees other PR files and excludes its own PR", asyn
     ],
     "/repos/DF-Guan/darktu-docs/pulls/2/files?per_page=100": [
       { filename: "src/index.js" }, { filename: "src/styles/sidebar.css" },
+    ],
+    "/repos/DF-Guan/darktu-docs/pulls/3/files?per_page=100": [
+      { filename: "docs/agent-sync.md" },
     ],
   };
   const fetcher = async (url) => {
@@ -95,6 +98,24 @@ test("remote conflict checker sees other PR files and excludes its own PR", asyn
     fetcher,
   });
   assert.deepEqual(clean.conflicts, []);
+
+  const alias = await remoteWork({
+    repo: "DF-Guan/darktu-docs",
+    branch: "review/from-worktree",
+    headSha: "pr3-head",
+    paths: ["docs/agent-sync.md"],
+    fetcher,
+  });
+  assert.deepEqual(alias.conflicts, [], "a review worktree at the same PR SHA is not a competing PR");
+
+  const diverged = await remoteWork({
+    repo: "DF-Guan/darktu-docs",
+    branch: "codex/agent-sync-preflight-pilot",
+    headSha: "local-head-not-yet-published",
+    paths: ["docs/agent-sync.md"],
+    fetcher,
+  });
+  assert.deepEqual(diverged.ownPRHeadMismatches.map((x) => x.number), [3]);
 });
 
 test("GitHub API inspection failures are never silently treated as no PRs", async () => {
