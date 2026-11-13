@@ -14,7 +14,7 @@ This repository is the **pilot**, not a central service and not a global install
 
 Requirements: Node.js 18+, Git, access to `origin`, network access to `api.github.com`. No `gh` CLI or extra npm package is required. For a private repo, supply `GH_TOKEN` / `GITHUB_TOKEN` with read-only repository access; the token is not printed.
 
-Run **from the project directory or a subdirectory**, before editing, with the paths you intend to touch:
+Run **from the repository root**, before editing, with paths relative to that root (from a subdirectory, invoke the script via its correct relative or absolute path):
 
 ```bash
 node scripts/agent-sync.mjs preflight --paths src/index.js --paths src/styles/sidebar.css
@@ -24,7 +24,7 @@ node scripts/agent-sync.mjs preflight --paths src/index.js --json
 Expected exit codes: `0` = checks passed; `2` = blocked or unverified. Even when green, the agent must still review relevant Issues, follow project rules, and re-check immediately before the PR.
 
 The checker:
-1. Reads current branch, HEAD SHA, dirty/untracked changes, original rules, and `origin` URL.
+1. Reads current branch, HEAD SHA, dirty/untracked changes, recognized project rules, and GitHub repository identity from `origin` (without printing credential-bearing origin URLs).
 2. Executes `git fetch --no-tags --prune origin` to refresh **remote Git references only**; no pull/merge/reset/clean and no change to project files.
 3. Compares current HEAD against `origin/main` (or `--base <branch>`); blocks if behind or when working directly on the base branch.
 4. Fetches open PRs and their changed-file lists via GitHub REST; blocks if another PR overlaps the declared paths. Displays open Issues for review.
