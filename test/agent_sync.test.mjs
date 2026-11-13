@@ -11,6 +11,7 @@ test("GitHub URL formats are recognized without guessing local paths", () => {
   assert.equal(githubRepo("https://github.com/DF-Guan/darktu-docs.git"), "DF-Guan/darktu-docs");
   assert.equal(githubRepo("ssh://git@github.com/DF-Guan/darktu-docs"), "DF-Guan/darktu-docs");
   assert.equal(githubRepo("file:///somewhere/repo.git"), null);
+  assert.equal(githubRepo("https://user:secret@github.com/DF-Guan/darktu-docs.git"), "DF-Guan/darktu-docs");
 });
 
 test("file and directory overlaps are specific", () => {
@@ -36,6 +37,12 @@ test("local snapshot preserves a dirty worktree", () => {
     assert.equal(before.branch, "pilot");
     assert.deepEqual(before.dirty, []);
     assert.deepEqual(before.rules, ["agent.md"]);
+    assert.equal(before.repo, "DF-Guan/darktu-docs");
+
+    git("remote", "set-url", "origin", "https://user:secret@github.com/DF-Guan/darktu-docs.git");
+    const credentialSafe = localSnapshot(root);
+    assert.equal(credentialSafe.repo, "DF-Guan/darktu-docs");
+    assert.doesNotMatch(JSON.stringify(credentialSafe), /secret/, "remote credentials must never be exposed");
 
     writeFileSync(join(root, "uncommitted.txt"), "do not overwrite\n");
     const after = localSnapshot(root);
