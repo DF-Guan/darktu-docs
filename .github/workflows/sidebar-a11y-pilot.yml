@@ -7,6 +7,7 @@ on:
       - src/index.js
       - src/styles/sidebar.css
       - test/sidebar_accessibility.test.js
+      - test/sidebar_browser.test.mjs
       - package.json
       - .github/workflows/sidebar-a11y-pilot.yml
 
@@ -26,3 +27,22 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Install one-off browser test tooling
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium
+      - name: Chromium keyboard smoke test and screenshots
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/darktu-vite.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node test/sidebar_browser.test.mjs
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidebar-a11y-browser-evidence
+          path: evidence/*.png
+          if-no-files-found: warn
