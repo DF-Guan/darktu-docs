@@ -27,7 +27,7 @@ The checker:
 1. Reads current branch, HEAD SHA, dirty/untracked changes, recognized project rules, and GitHub repository identity from `origin` (without printing credential-bearing origin URLs).
 2. Executes `git fetch --no-tags --prune origin` to refresh **remote Git references only**; no pull/merge/reset/clean and no change to project files.
 3. Compares current HEAD against `origin/main` (or `--base <branch>`); blocks if behind or when working directly on the base branch.
-4. Fetches open PRs and their changed-file lists via GitHub REST; blocks if another PR overlaps the declared paths. Displays open Issues for review.
+4. Fetches open PRs and their changed-file lists via GitHub REST; blocks if another PR overlaps the declared paths. Matches the current PR by branch or exact HEAD SHA (for renamed local review worktrees); a mismatch between the local and published head of the same PR blocks. Displays open Issues for review.
 5. Fails closed on unavailable remote/API, unknown origin, missing scope, or incomplete API pagination rather than claiming an all-clear.
 
 Path overlap is intentionally **file/directory based**: it cannot prove semantic independence when two changes affect shared behavior in different files. It does not claim a lock or reveal another machine's uncommitted code. At the moment it only handles GitHub remotes, with `main` as the default base (override with `--base`).
