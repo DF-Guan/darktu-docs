@@ -12,7 +12,7 @@ const git = (cwd, ...args) => execFileSync("git", args, {
 }).trim();
 
 export function githubRepo(remote) {
-  const match = remote.match(/^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([^/]+\/[^/]+?)(?:\.git)?\/?$/);
+  const match = remote.match(/^(?:https:\/\/(?:[^/@]+@)?github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([^/]+\/[^/]+?)(?:\.git)?\/?$/);
   return match?.[1] ?? null;
 }
 
@@ -30,7 +30,7 @@ export function localSnapshot(cwd = process.cwd()) {
     root,
     branch: git(root, "branch", "--show-current"),
     head: git(root, "rev-parse", "HEAD"),
-    remote: git(root, "remote", "get-url", "origin"),
+    repo: githubRepo(git(root, "remote", "get-url", "origin")),
     dirty: dirty ? dirty.split("\n") : [],
     rules: ["AGENTS.md", "agent.md", "CLAUDE.md", "docs/feature_map.md"]
       .filter((file) => existsSync(resolve(root, file))),
@@ -86,7 +86,7 @@ export async function preflight({ cwd = process.cwd(), paths = [], base = "main"
     return { ready: false, blocking: [`LOCAL_GIT_UNAVAILABLE: ${error.message}`], warnings };
   }
 
-  const repo = githubRepo(local.remote);
+  const repo = local.repo;
   if (!repo) blocking.push("UNKNOWN_GITHUB_REMOTE: origin is not a recognized GitHub repository");
   if (!local.branch) blocking.push("DETACHED_HEAD: use an isolated named branch");
   if (local.branch === base) blocking.push("BASE_BRANCH: create a separate work branch");
@@ -103,8 +103,8 @@ export async function preflight({ cwd = process.cwd(), paths = [], base = "main"
     const counts = git(local.root, "rev-list", "--left-right", "--count",
       `HEAD...refs/remotes/origin/${base}`).split(/\s+/).map(Number);
     if (counts[1] > 0) blocking.push(`STALE_BASE: local HEAD is missing ${counts[1]} commit(s) from origin/${base}`);
-  } catch (error) {
-    blocking.push(`REMOTE_BASE_UNVERIFIED: ${error.message}`);
+  } catch {
+    blocking.push("REMOTE_BASE_UNVERIFIED: git fetch or base comparison failed; check origin and network");
   }
 
   let work = { conflicts: [], openPRs: [], openIssues: [] };
