@@ -37,7 +37,7 @@ export function localSnapshot(cwd = process.cwd()) {
   };
 }
 
-export async function remoteWork({ repo, branch, paths, token, fetcher = fetch }) {
+export async function remoteWork({ repo, branch, headSha, paths, token, fetcher = fetch }) {
   const request = async (pathname) => {
     const response = await fetcher(`https://api.github.com/repos/${repo}${pathname}`, {
       headers: {
@@ -56,8 +56,17 @@ export async function remoteWork({ repo, branch, paths, token, fetcher = fetch }
   }
 
   const conflicts = [];
+  const ownPRHeadMismatches = [];
   for (const pr of prs) {
-    if (pr.head?.ref === branch && pr.head?.repo?.full_name === repo) continue;
+    const sameRepo = pr.head?.repo?.full_name === repo;
+    if (sameRepo && pr.head?.ref === branch) {
+      if (headSha && pr.head.sha && pr.head.sha !== headSha) {
+        ownPRHeadMismatches.push({ number: pr.number, remoteHead: pr.head.sha });
+      }
+      continue;
+    }
+    // Local worktree review branches may have a different name but the same PR HEAD.
+    if (sameRepo && headSha && pr.head?.sha === headSha) continue;
     const files = await request(`/pulls/${pr.number}/files?per_page=100`);
     if (files.length === 100) {
       throw new Error(`PR #${pr.number} has 100+ files: cannot verify overlap safely`);
@@ -68,6 +77,7 @@ export async function remoteWork({ repo, branch, paths, token, fetcher = fetch }
   }
   return {
     conflicts,
+    ownPRHeadMismatches,
     openPRs: prs.map(({ number, title, html_url, head }) => ({
       number, title, url: html_url, branch: head?.ref,
     })),
@@ -107,10 +117,13 @@ export async function preflight({ cwd = process.cwd(), paths = [], base = "main"
     blocking.push("REMOTE_BASE_UNVERIFIED: git fetch or base comparison failed; check origin and network");
   }
 
-  let work = { conflicts: [], openPRs: [], openIssues: [] };
+  let work = { conflicts: [], ownPRHeadMismatches: [], openPRs: [], openIssues: [] };
   if (repo) {
     try {
-      work = await remoteWork({ repo, branch: local.branch, paths, token, fetcher });
+      work = await remoteWork({ repo, branch: local.branch, headSha: local.head, paths, token, fetcher });
+      for (const mismatch of work.ownPRHeadMismatches) {
+        blocking.push(`OWN_PR_HEAD_MISMATCH: local HEAD differs from PR #${mismatch.number} (${mismatch.remoteHead})`);
+      }
       for (const conflict of work.conflicts) {
         blocking.push(`REMOTE_PR_OVERLAP: PR #${conflict.number} modifies ${conflict.files.join(", ")}`);
       }
