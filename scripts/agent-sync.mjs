@@ -3,7 +3,7 @@
  * Only "git fetch" changes Git metadata (remote-tracking refs), never working files.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -169,6 +169,6 @@ async function main() {
   process.exitCode = result.ready ? 0 : 2;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   await main();
 }
