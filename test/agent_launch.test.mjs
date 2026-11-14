@@ -67,3 +67,12 @@ test("clean preflight failing to spawn reports error instead of claiming success
   queueMicrotask(() => child.emit("error", Object.assign(new Error("not found"), { code: "ENOENT" })));
   assert.equal(await p, 1);
 });
+
+test("real native Node executable can be launched without shell intervention", async () => {
+  const code = await launchAgent({
+    paths: ["."], command: [process.execPath, "-e", "process.exit(0)"],
+    checker: async () => ({ ready: true, repo: "DF-Guan/darktu-docs", blocking: [], warnings: [] }),
+    write: () => {},
+  });
+  assert.equal(code, 0);
+});
