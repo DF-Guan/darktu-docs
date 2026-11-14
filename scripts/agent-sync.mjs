@@ -136,6 +136,30 @@ export async function preflight({ cwd = process.cwd(), paths = [], base = "main"
   return { ready: blocking.length === 0, repo, base, baseHead, paths, local, ...work, blocking, warnings };
 }
 
+/**
+ * Public handoff output must never expose absolute workspace paths, untracked
+ * local filenames, or raw CLI failure diagnostics. Internal preflight retains
+ * the full snapshot for safety decisions.
+ */
+export function shareablePreflightReport(result) {
+  const { local, ...rest } = result;
+  return {
+    ...rest,
+    paths: (result.paths ?? []).map((path) =>
+      path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path)
+        ? "<REDACTED_ABSOLUTE_PATH>" : path),
+    blocking: (result.blocking ?? []).map((reason) => {
+      if (reason.startsWith("LOCAL_GIT_UNAVAILABLE:")) return "LOCAL_GIT_UNAVAILABLE: local Git inspection failed";
+      if (reason.startsWith("GITHUB_STATE_UNVERIFIED:")) return "GITHUB_STATE_UNVERIFIED: GitHub state inspection failed";
+      return reason;
+    }),
+    local: local ? {
+      repo: local.repo, branch: local.branch, head: local.head,
+      dirtyCount: local.dirty?.length ?? 0, rules: local.rules,
+    } : local,
+  };
+}
+
 async function main() {
   const args = process.argv.slice(2);
   if (args.shift() !== "preflight") {
@@ -158,13 +182,14 @@ async function main() {
     }
   }
   const result = await preflight({ paths, base });
-  if (json) console.log(JSON.stringify(result, null, 2));
+  const report = shareablePreflightReport(result);
+  if (json) console.log(JSON.stringify(report, null, 2));
   else {
-    console.log(`Agent preflight: ${result.ready ? "READY" : "BLOCKED"} | ${result.repo ?? "unknown repo"} | ${result.local?.branch ?? "unknown branch"}`);
-    for (const item of result.blocking) console.log(`BLOCK: ${item}`);
-    for (const item of result.warnings) console.log(`NOTE: ${item}`);
-    for (const pr of result.openPRs ?? []) console.log(`OPEN PR #${pr.number}: ${pr.title} (${pr.url})`);
-    for (const issue of result.openIssues ?? []) console.log(`OPEN ISSUE #${issue.number}: ${issue.title} (${issue.url})`);
+    console.log(`Agent preflight: ${report.ready ? "READY" : "BLOCKED"} | ${report.repo ?? "unknown repo"} | ${report.local?.branch ?? "unknown branch"}`);
+    for (const item of report.blocking) console.log(`BLOCK: ${item}`);
+    for (const item of report.warnings) console.log(`NOTE: ${item}`);
+    for (const pr of report.openPRs ?? []) console.log(`OPEN PR #${pr.number}: ${pr.title} (${pr.url})`);
+    for (const issue of report.openIssues ?? []) console.log(`OPEN ISSUE #${issue.number}: ${issue.title} (${issue.url})`;
   }
   process.exitCode = result.ready ? 0 : 2;
 }
