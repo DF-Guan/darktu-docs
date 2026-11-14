@@ -1,0 +1,32 @@
+name: Verify pull request
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Existing project regression gates
+        run: npm test
+      - name: Agent collaboration regression tests
+        run: node --test test/agent_sync.test.mjs
+      - name: Production build verification (no deployment)
+        run: npm run build
