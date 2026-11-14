@@ -145,9 +145,11 @@ export function shareablePreflightReport(result) {
   const { local, ...rest } = result;
   return {
     ...rest,
-    paths: (result.paths ?? []).map((path) =>
-      path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path)
-        ? "<REDACTED_ABSOLUTE_PATH>" : path),
+    paths: (result.paths ?? []).map((path) => {
+      const normalized = path.replaceAll("\\", "/");
+      return normalized.startsWith("/") || /^[A-Za-z]:/.test(normalized) || normalized.split("/").includes("..")
+        ? "<REDACTED_ABSOLUTE_PATH>" : path;
+    }),
     blocking: (result.blocking ?? []).map((reason) => {
       if (reason.startsWith("LOCAL_GIT_UNAVAILABLE:")) return "LOCAL_GIT_UNAVAILABLE: local Git inspection failed";
       if (reason.startsWith("GITHUB_STATE_UNVERIFIED:")) return "GITHUB_STATE_UNVERIFIED: GitHub state inspection failed";
@@ -176,7 +178,7 @@ async function main() {
     else if (flag === "--base" && args.length) base = args.shift();
     else if (flag === "--json") json = true;
     else {
-      console.error(`Unknown/missing argument: ${flag}`);
+      console.error("Unknown or missing preflight option; expected --paths, --base, or --json");
       process.exitCode = 2;
       return;
     }
