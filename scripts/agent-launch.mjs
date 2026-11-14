@@ -66,7 +66,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.ar
     const { paths, base, command } = parseLaunchArgs(process.argv.slice(2));
     process.exitCode = await launchAgent({ paths, base, command });
   } catch (error) {
-    console.error(error.message);
+    console.error("Invalid launcher options or execution failure; inspect your local command safely");
     process.exitCode = 2;
   }
 }
