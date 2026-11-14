@@ -5,7 +5,7 @@
 import { spawn } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { preflight } from "./agent-sync.mjs";
+import { preflight, shareablePreflightReport } from "./agent-sync.mjs";
 
 export function parseLaunchArgs(args) {
   const delimiter = args.indexOf("--");
@@ -37,21 +37,22 @@ export async function launchAgent({
   checker = preflight, spawnImpl = spawn, write = (s) => process.stderr.write(s),
 }) {
   const result = await checker({ cwd, paths, base });
-  for (const reason of result.blocking ?? []) write(`BLOCK: ${reason}\n`);
-  for (const note of result.warnings ?? []) write(`NOTE: ${note}\n`);
+  const report = shareablePreflightReport(result);
+  for (const reason of report.blocking ?? []) write(`BLOCK: ${reason}\n`);
+  for (const note of report.warnings ?? []) write(`NOTE: ${note}\n`);
 
   if (!result.ready) {
     write("Agent NOT started. Resolve preflight blockers without changing existing local work.\n");
     return 2;
   }
 
-  write(`Preflight READY for ${result.repo ?? "repository"}; starting ${command[0]}.\n`);
+  write(`Preflight READY for ${report.repo ?? "repository"}; starting the requested executable.\n`);
   return new Promise((done) => {
     const child = spawnImpl(command[0], command.slice(1), {
       cwd, stdio: "inherit", shell: false,
     });
     child.once("error", (error) => {
-      write(`Agent launch failed: ${error.code ?? error.message}\n`);
+      write(`Agent launch failed: ${error.code ?? "SPAWN_FAILED"}\n`);
       done(1);
     });
     child.once("exit", (code, signal) => {
