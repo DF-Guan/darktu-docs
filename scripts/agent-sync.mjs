@@ -16,11 +16,11 @@ export function githubRepo(remote) {
   return match?.[1] ?? null;
 }
 
-const normalize = (value) => value.replaceAll("\\", "/").replace(/^\.\//, "").replace(/\/$/, "");
+const normalize = (value) => value.replaceAll("\\", "/").replace(/^(\.\/)+/, "").replace(/\/+$/, "") || ".";
 export function pathsOverlap(a, b) {
   const left = normalize(a);
   const right = normalize(b);
-  return left === right || left.startsWith(right + "/") || right.startsWith(left + "/");
+  return left === "." || right === "." || left === right || left.startsWith(right + "/") || right.startsWith(left + "/");
 }
 
 export function localSnapshot(cwd = process.cwd()) {
@@ -71,8 +71,8 @@ export async function remoteWork({ repo, branch, headSha, paths, token, fetcher 
     if (files.length === 100) {
       throw new Error(`PR #${pr.number} has 100+ files: cannot verify overlap safely`);
     }
-    const shared = files.filter(({ filename }) => paths.some((path) => pathsOverlap(path, filename)))
-      .map(({ filename }) => filename);
+    const shared = [...new Set(files.flatMap(({ filename, previous_filename }) => [filename, previous_filename]
+      .filter(Boolean)).filter((filename) => paths.some((path) => pathsOverlap(path, filename))))];
     if (shared.length) conflicts.push({ number: pr.number, url: pr.html_url, files: shared });
   }
   return {
@@ -102,7 +102,7 @@ export async function preflight({ cwd = process.cwd(), paths = [], base = "main"
   if (local.branch === base) blocking.push("BASE_BRANCH: create a separate work branch");
   if (local.dirty.length) blocking.push(`DIRTY_WORKTREE: ${local.dirty.length} changed/untracked path(s)`);
   if (!paths.length) blocking.push("SCOPE_MISSING: pass --paths <path> for planned files");
-  if (paths.some((p) => !p || p.startsWith("/") || p === ".." || p.startsWith("../") || p.includes("/../"))) {
+  if (paths.some((p) => !p || p.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(p) || p.replaceAll("\\", "/").split("/").includes(".."))) {
     blocking.push("SCOPE_INVALID: paths must be relative to the repository root");
   }
 
