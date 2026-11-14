@@ -48,7 +48,7 @@ test("clean preflight launches exactly the requested executable and propagates e
     },
     write: () => {},
   });
-  child.emit("exit", 7, null);
+  queueMicrotask(() => child.emit("exit", 7, null));
   assert.equal(await codePromise, 7);
   assert.deepEqual(calls[0].args, ["--print", "hello"]);
   assert.equal(calls[0].name, "opencode");
@@ -64,6 +64,6 @@ test("clean preflight failing to spawn reports error instead of claiming success
     spawnImpl: () => child,
     write: () => {},
   });
-  child.emit("error", Object.assign(new Error("not found"), { code: "ENOENT" }));
+  queueMicrotask(() => child.emit("error", Object.assign(new Error("not found"), { code: "ENOENT" })));
   assert.equal(await p, 1);
 });
