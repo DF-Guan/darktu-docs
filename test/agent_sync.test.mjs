@@ -19,6 +19,8 @@ test("file and directory overlaps are specific", () => {
   assert.equal(pathsOverlap("src", "src/index.js"), true);
   assert.equal(pathsOverlap("src/index.js", "src/other.js"), false);
   assert.equal(pathsOverlap("src/index.js", "docs/index.js"), false);
+  assert.equal(pathsOverlap(".", "src/index.js"), true, "repository-wide scope must match all files");
+  assert.equal(pathsOverlap("./", "src/styles/sidebar.css"), true, "dot-slash scope matches all files");
 });
 
 test("local snapshot preserves a dirty worktree", () => {
@@ -69,6 +71,7 @@ test("remote conflict checker sees other PR files and excludes its own PR", asyn
     ],
     "/repos/DF-Guan/darktu-docs/pulls/2/files?per_page=100": [
       { filename: "src/index.js" }, { filename: "src/styles/sidebar.css" },
+      { filename: "src/services/new-name.js", previous_filename: "src/services/old-name.js", status: "renamed" },
     ],
     "/repos/DF-Guan/darktu-docs/pulls/3/files?per_page=100": [
       { filename: "docs/agent-sync.md" },
@@ -88,6 +91,11 @@ test("remote conflict checker sees other PR files and excludes its own PR", asyn
   });
   assert.deepEqual(result.conflicts.map((x) => x.number), [2]);
   assert.deepEqual(result.conflicts[0].files, ["src/index.js"]);
+  const renamed = await remoteWork({
+    repo: "DF-Guan/darktu-docs", branch: "codex/agent-sync-preflight-pilot",
+    paths: ["src/services/old-name.js"], fetcher,
+  });
+  assert.deepEqual(renamed.conflicts[0].files, ["src/services/old-name.js"], "rename previous path must be protected");
   assert.deepEqual(result.openIssues.map((x) => x.number), [1]);
   assert.equal(calls.some((c) => c.includes("/pulls/3/files")), false, "self PR is excluded");
 
