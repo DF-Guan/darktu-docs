@@ -30,6 +30,22 @@ test("blocked preflight never launches agent", async () => {
   assert.match(messages.join(""), /REMOTE_PR_OVERLAP/);
 });
 
+test("launcher never prints raw local diagnostics or its executable path", async () => {
+  const messages = [];
+  const result = await launchAgent({
+    paths: ["src/index.js"], command: ["custom-tool"],
+    checker: async () => ({
+      ready: false, blocking: ["LOCAL_GIT_UNAVAILABLE: HIDDEN_MACHINE_DETAILS"],
+      warnings: [], local: { root: "HIDDEN_LOCAL_ROOT", dirty: [] },
+    }),
+    spawnImpl: () => { throw new Error("must not launch"); },
+    write: (message) => messages.push(message),
+  });
+  assert.equal(result, 2);
+  assert.match(messages.join(""), /LOCAL_GIT_UNAVAILABLE: local Git inspection failed/);
+  assert.doesNotMatch(messages.join(""), /HIDDEN_MACHINE_DETAILS|HIDDEN_LOCAL_ROOT/);
+});
+
 test("clean preflight launches exactly the requested executable and propagates exit code", async () => {
   const calls = [];
   const child = new EventEmitter();
