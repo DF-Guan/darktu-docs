@@ -19,7 +19,9 @@ test("staged branch ruleset requires a real PR and the existing verify CI", () =
 
   const required = policy.rules.find((rule) => rule.type === "required_status_checks");
   assert.deepEqual(required.parameters.required_status_checks, [{ context: "verify" }]);
-  assert.match(workflow, /\n\s+verify:\n/, "required job must exist");
+  const verifyJobPattern = /\r?\n\s+verify:\r?\n/;
+  assert.match(workflow, verifyJobPattern, "required job must exist");
+  assert.match(workflow.replace(/\r?\n/g, "\r\n"), verifyJobPattern, "CRLF checkout must also be supported");
   assert.match(workflow, /pull_request:/, "required job must run on PRs");
   assert.doesNotMatch(workflow, /\n\s+if:\s*github\.head_ref/, "required job must not be branch-specific");
 });

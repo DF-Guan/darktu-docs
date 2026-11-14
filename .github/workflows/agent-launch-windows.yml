@@ -6,6 +6,9 @@ on:
     paths:
       - scripts/agent-launch.mjs
       - test/agent_launch.test.mjs
+      - scripts/agent-sync.mjs
+      - test/agent_cli_entry.test.mjs
+      - test/branch_ruleset.test.mjs
       - .github/workflows/agent-launch-windows.yml
 
 permissions:
@@ -23,4 +26,4 @@ jobs:
         with:
           node-version: '22'
       - name: Native executable and blocking logic
-        run: node --test test/agent_launch.test.mjs
+        run: node --test test/agent_launch.test.mjs test/agent_cli_entry.test.mjs test/branch_ruleset.test.mjs

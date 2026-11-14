@@ -3,7 +3,7 @@
  * No global settings, hooks, shell invocation, merge, reset, or deployment.
  */
 import { spawn } from "node:child_process";
-import { resolve } from "node:path";
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { preflight } from "./agent-sync.mjs";
 
@@ -60,7 +60,7 @@ export async function launchAgent({
   });
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   try {
     const { paths, base, command } = parseLaunchArgs(process.argv.slice(2));
     process.exitCode = await launchAgent({ paths, base, command });
