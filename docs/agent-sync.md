@@ -49,3 +49,39 @@ Path overlap is intentionally **file/directory based**: it cannot prove semantic
 - CI runs these scenarios and existing project tests; a failing CI result means the demonstration has not passed.
 
 This is **stage one**. No task-claim API, permanent agent scheduler, automatic branch merge, GitHub Ruleset installation, or cross-device real-time sync has been implemented.
+
+## Opt-in launcher for terminal-capable agents (stage two)
+
+This is a **universal command wrapper**, not an automatic plugin installation. It works for CLI tools that are installed locally, and starts the executable **only after** the same preflight returns READY. It uses direct process spawning (`shell: false`) and forwards the agent's exit code. It changes no system shell configuration and never overwrites an IDE's existing hooks/settings.
+
+First create or switch to a clean **working branch/worktree**. Starting from `main` will be intentionally blocked. Then, from the repository root:
+
+```bash
+node scripts/agent-launch.mjs --paths src/index.js -- codex
+node scripts/agent-launch.mjs --paths docs/agent-sync.md -- opencode
+node scripts/agent-launch.mjs --paths src/styles/sidebar.css -- claude
+```
+
+For additional CLI tools, replace only the executable after `--`. Additional flags for that tool follow its executable as usual.
+
+**Windows CLI limitation:** Node's direct spawn supports native executables (such as `node.exe`), but npm-installed tools often expose `.cmd` shims, which may not start without a command processor. This launcher intentionally does **not** fall back to `shell: true` (which would require careful quoting and could expose command-injection risks). If an Agent is installed only as a `.cmd` shim, run `node scripts/agent-sync.mjs preflight --paths <scope>` first, then launch it through your normal trusted terminal until a separately tested Windows adapter is available. Windows CI validates native executable launch, **not** every third-party CLI shim. `--paths` may be repeated; the scope must describe every intended target. An IDE that is already running (Cursor/Antigravity etc.) **will not** be intercepted by this launcher. Such tools must explicitly execute the preflight via their supported project instruction or session hook; do not assume every agent follows `AGENTS.md` automatically. For Claude Code a `SessionStart` hook exists, but hook installation should be done separately after reviewing existing settings and security implications.
+
+The launcher is an **intake gate**, not a continuous lock or synchronization engine. Run the checker again before submitting a PR. Dirty state on a continuing working session should be assessed and handed off, not automatically wiped.
+
+## Proposed GitHub branch protection (NOT YET INSTALLED)
+
+`.github/main-ruleset.json` is a **reviewable intended policy**, not an active GitHub setting simply because the file is committed. It targets the default branch, requires pull requests and the existing `verify` CI job, disallows force pushes and deletion, and requires **zero separate approvals** so a solo maintainer is not locked out. It adds no bypass actors. Strict up-to-date status checking is disabled to avoid rerunning the complete build for unrelated base changes; maintainers should still check the diff and compatibility.
+
+This ChatGPT GitHub connector lacks the GitHub **Administration: write** operation, so it cannot create the Ruleset. A user with repository-admin access can activate it **once**, after verifying the job name in the PR Checks tab:
+
+```bash
+gh auth status
+gh api repos/DF-Guan/darktu-docs/rulesets --jq '.[] | {id,name,enforcement}'
+# Only if agent-sync-main-required-ci does not already exist:
+gh api --method POST repos/DF-Guan/darktu-docs/rulesets --input .github/main-ruleset.json
+gh api repos/DF-Guan/darktu-docs/rulesets --jq '.[] | {id,name,enforcement}'
+```
+
+Run these only from a trusted admin environment and only after reviewing the JSON. The REST API needs repository `Administration: write` authorization. To confirm enforcement, view the GitHub repository Settings → Rules → Rulesets and inspect `main`'s effective rules; the JSON file alone is **not proof**. Enabling a required check could block pre-existing PRs until that check is present on their current commit. No deployment, branch-protection write, or secret/token provisioning is performed by this repository code.
+
+The shared PR CI currently runs on `pull_request` targeting `main`, not scheduled, and uses read-only permissions. Changes to the Ruleset should be separately reviewed and manually activated; do not silently turn a staged proposal into an active rule.

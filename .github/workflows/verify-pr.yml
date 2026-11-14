@@ -26,7 +26,7 @@ jobs:
       - run: npm ci
       - name: Existing project regression gates
         run: npm test
-      - name: Agent collaboration regression tests
-        run: node --test test/agent_sync.test.mjs
+      - name: Agent collaboration and staged branch policy tests
+        run: node --test test/agent_sync.test.mjs test/agent_launch.test.mjs test/branch_ruleset.test.mjs
       - name: Production build verification (no deployment)
         run: npm run build
