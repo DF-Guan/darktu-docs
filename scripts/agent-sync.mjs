@@ -189,7 +189,7 @@ async function main() {
     for (const item of report.blocking) console.log(`BLOCK: ${item}`);
     for (const item of report.warnings) console.log(`NOTE: ${item}`);
     for (const pr of report.openPRs ?? []) console.log(`OPEN PR #${pr.number}: ${pr.title} (${pr.url})`);
-    for (const issue of report.openIssues ?? []) console.log(`OPEN ISSUE #${issue.number}: ${issue.title} (${issue.url})`;
+    for (const issue of report.openIssues ?? []) console.log(`OPEN ISSUE #${issue.number}: ${issue.title} (${issue.url})`);
   }
   process.exitCode = result.ready ? 0 : 2;
 }
