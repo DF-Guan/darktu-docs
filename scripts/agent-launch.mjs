@@ -4,7 +4,6 @@
  */
 import { spawn } from "node:child_process";
 import { realpathSync } from "node:fs";
-import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { preflight } from "./agent-sync.mjs";
 
