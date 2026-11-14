@@ -72,14 +72,14 @@ export class DarktuDocsApp {
 
     container.innerHTML = DOCS_NAVIGATION.map((cat) => `
       <div class="sidebar-category" id="cat-${cat.id}">
-        <div class="sidebar-category-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <button type="button" class="sidebar-category-header" aria-expanded="true" aria-controls="sidebar-items-${cat.id}">
           <div class="category-title-group">
             <svg class="category-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
             <span>${cat.title}</span>
           </div>
           <span class="category-badge">${cat.badge}</span>
-        </div>
-        <div class="sidebar-items-list">
+        </button>
+        <div class="sidebar-items-list" id="sidebar-items-${cat.id}">
           ${cat.items.map((item) => `
             <a href="#/${item.slug}" class="sidebar-item-link" id="link-${item.id.replace(/\//g, "-")}">
               ${item.title}
@@ -88,6 +88,14 @@ export class DarktuDocsApp {
         </div>
       </div>
     `).join("");
+
+    container.addEventListener("click", (event) => {
+      const trigger = event.target.closest(".sidebar-category-header");
+      if (!trigger || !container.contains(trigger)) return;
+      const category = trigger.closest(".sidebar-category");
+      const collapsed = category.classList.toggle("collapsed");
+      trigger.setAttribute("aria-expanded", String(!collapsed));
+    });
 
     const filterInput = document.getElementById("sidebarFilter");
     filterInput?.addEventListener("input", (e) => {
