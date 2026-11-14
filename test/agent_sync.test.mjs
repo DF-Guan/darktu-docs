@@ -17,9 +17,10 @@ test("GitHub URL formats are recognized without guessing local paths", () => {
 
 test("shareable preflight report omits private local paths and diagnostics", () => {
   const privateRoot = ["C:", "Users", "TEST_ONLY_ACCOUNT", "worktree"].join("\\");
+  const privateUNC = ["", "", "TEST_ONLY_SERVER", "private"].join("\\");
   const raw = {
     ready: false, repo: "DF-Guan/darktu-docs", base: "main", baseHead: "a1",
-    paths: [privateRoot, "src/index.js"],
+    paths: [privateRoot, privateUNC, "../private", "src/index.js"],
     local: { root: privateRoot, branch: "test-branch", head: "b2",
       repo: "DF-Guan/darktu-docs", dirty: ["?? private-local-file.txt"],
       rules: ["agent.md"] },
@@ -30,12 +31,12 @@ test("shareable preflight report omits private local paths and diagnostics", () 
   assert.equal(shared.ready, false);
   assert.equal(shared.local.branch, "test-branch");
   assert.equal(shared.local.dirtyCount, 1);
-  assert.deepEqual(shared.paths, ["<REDACTED_ABSOLUTE_PATH>", "src/index.js"]);
+  assert.deepEqual(shared.paths, ["<REDACTED_ABSOLUTE_PATH>", "<REDACTED_ABSOLUTE_PATH>", "<REDACTED_ABSOLUTE_PATH>", "src/index.js"]);
   assert.deepEqual(shared.blocking, [
     "LOCAL_GIT_UNAVAILABLE: local Git inspection failed",
     "SCOPE_INVALID: paths must be relative",
   ]);
-  assert.doesNotMatch(JSON.stringify(shared), /TEST_ONLY_ACCOUNT|private-local-file|PRIVATE_DIAGNOSTICS/);
+  assert.doesNotMatch(JSON.stringify(shared), /TEST_ONLY_ACCOUNT|TEST_ONLY_SERVER|private-local-file|PRIVATE_DIAGNOSTICS/);
 });
 
 test("file and directory overlaps are specific", () => {
