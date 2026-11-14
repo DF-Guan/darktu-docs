@@ -4,7 +4,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { githubRepo, pathsOverlap, localSnapshot, remoteWork } from "../scripts/agent-sync.mjs";
+import * as sync from "../scripts/agent-sync.mjs";
+const { githubRepo, pathsOverlap, localSnapshot, remoteWork } = sync;
 
 test("GitHub URL formats are recognized without guessing local paths", () => {
   assert.equal(githubRepo("git@github.com:DF-Guan/darktu-docs.git"), "DF-Guan/darktu-docs");
@@ -12,6 +13,30 @@ test("GitHub URL formats are recognized without guessing local paths", () => {
   assert.equal(githubRepo("ssh://git@github.com/DF-Guan/darktu-docs"), "DF-Guan/darktu-docs");
   assert.equal(githubRepo("file:///somewhere/repo.git"), null);
   assert.equal(githubRepo("https://user:secret@github.com/DF-Guan/darktu-docs.git"), "DF-Guan/darktu-docs");
+});
+
+test("shareable preflight report omits private local paths and diagnostics", () => {
+  const privateRoot = ["C:", "Users", "TEST_ONLY_ACCOUNT", "worktree"].join("\\");
+  const privateUNC = ["", "", "TEST_ONLY_SERVER", "private"].join("\\");
+  const raw = {
+    ready: false, repo: "DF-Guan/darktu-docs", base: "main", baseHead: "a1",
+    paths: [privateRoot, privateUNC, "../private", "src/index.js"],
+    local: { root: privateRoot, branch: "test-branch", head: "b2",
+      repo: "DF-Guan/darktu-docs", dirty: ["?? private-local-file.txt"],
+      rules: ["agent.md"] },
+    blocking: ["LOCAL_GIT_UNAVAILABLE: PRIVATE_DIAGNOSTICS", "SCOPE_INVALID: paths must be relative"],
+    warnings: [], conflicts: [], openPRs: [], openIssues: [],
+  };
+  const shared = sync.shareablePreflightReport(raw);
+  assert.equal(shared.ready, false);
+  assert.equal(shared.local.branch, "test-branch");
+  assert.equal(shared.local.dirtyCount, 1);
+  assert.deepEqual(shared.paths, ["<REDACTED_ABSOLUTE_PATH>", "<REDACTED_ABSOLUTE_PATH>", "<REDACTED_ABSOLUTE_PATH>", "src/index.js"]);
+  assert.deepEqual(shared.blocking, [
+    "LOCAL_GIT_UNAVAILABLE: local Git inspection failed",
+    "SCOPE_INVALID: paths must be relative",
+  ]);
+  assert.doesNotMatch(JSON.stringify(shared), /TEST_ONLY_ACCOUNT|TEST_ONLY_SERVER|private-local-file|PRIVATE_DIAGNOSTICS/);
 });
 
 test("file and directory overlaps are specific", () => {

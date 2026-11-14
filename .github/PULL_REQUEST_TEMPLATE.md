@@ -11,6 +11,11 @@
 - [ ] Read the applicable project rules. Existing `agent.md`, Feature Map, and release requirements remain authoritative.
 - [ ] Preserved any existing local or remote work; no unrelated changes or destructive Git commands.
 
+## Privacy of public handoffs
+
+- [ ] Redacted local absolute paths, OS usernames, untracked/local-only filenames, credentials, environment variables, and data from unrelated/private repositories from all PR text, screenshots, and uploaded logs.
+- [ ] Shared only sanitized preflight output, commit SHAs, scoped changes, and verifiable CI links. Do not paste raw terminal or IDE transcripts.
+
 ## Verification
 
 - [ ] `npm test` (or explain why not run).

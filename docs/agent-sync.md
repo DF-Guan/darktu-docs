@@ -23,6 +23,8 @@ node scripts/agent-sync.mjs preflight --paths src/index.js --json
 
 Expected exit codes: `0` = checks passed; `2` = blocked or unverified. Even when green, the agent must still review relevant Issues, follow project rules, and re-check immediately before the PR.
 
+**Privacy when sharing results:** The CLI now omits the local absolute repository root and individual dirty/untracked filenames from output, substituting `local.dirtyCount`; absolute scope arguments and raw Git inspection diagnostics are redacted. Internal safety checks still use the complete local snapshot. Public Issue/PR comments must never include raw IDE/terminal transcripts, local usernames or paths, tokens, environment variables, private repository metadata, or information from unrelated projects. Review attachments and screenshots separately: no CLI sanitizer can guarantee that free-form Agent narratives or images are safe.
+
 The checker:
 1. Reads current branch, HEAD SHA, dirty/untracked changes, recognized project rules, and GitHub repository identity from `origin` (without printing credential-bearing origin URLs).
 2. Executes `git fetch --no-tags --prune origin` to refresh **remote Git references only**; no pull/merge/reset/clean and no change to project files.
