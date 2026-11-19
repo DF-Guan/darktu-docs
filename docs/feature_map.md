@@ -32,7 +32,9 @@
 * **Agent Drive (机器驱动 API)**:
   - `setupKeyboardShortcuts()`, `toggleShortcutsModal(show)`.
 * **Observable State (物理可观测证明状态)**:
-  - 页面监听全局 `keydown`，自动过滤输入框焦点，操作触发 URL Hash 变更或滚动。
+  - 页面监听全局 `keydown`，自动过滤输入框焦点，操作触发 URL Hash 变更或滚动；
+  - `#shortcutsModalOverlay` 具备 `role="dialog"`, `aria-modal="true"`, `aria-labelledby="shortcutsModalTitle"`；打开时焦点捕获在内部（Focus Trap，Tab 键循环封闭），关闭时原位恢复调用前 activeElement；
+  - `T` 键回到顶部与全局 CSS 均严格响应 `prefers-reduced-motion: reduce`，在动效减弱偏好下自适应为无动画 `'auto'` 跳转。
 
 ### 4. 阅读舒适度与字号调节器 (`src/services/readingSettings.js`)
 * **User POV (用户入口)**:
