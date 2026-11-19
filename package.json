@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/verify_feature_map.js && node test/verify_dune_architecture.js && node test/verify_reversibility_gate.js && node test/docs_integrity.test.js",
+    "test": "node test/verify_feature_map.js && node test/verify_dune_architecture.js && node test/verify_reversibility_gate.js && node test/docs_integrity.test.js && node test/sidebar_accessibility.test.js",
     "verify:fm": "node test/verify_feature_map.js",
     "verify:dune": "node test/verify_dune_architecture.js",
     "verify:gate": "node test/verify_reversibility_gate.js",
