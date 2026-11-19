@@ -23,7 +23,7 @@
     <!-- 顶部 Header -->
     <header class="docs-header">
       <div class="header-left">
-        <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="打开目录菜单">
+        <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="打开目录菜单" aria-expanded="false" aria-controls="docsSidebar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
         <a href="#/overview" class="docs-brand">
@@ -79,12 +79,12 @@
     </header>
 
     <!-- 移动端侧边栏遮罩 -->
-    <div id="sidebarBackdrop" class="sidebar-backdrop" style="display: none;"></div>
+    <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true" style="display: none;"></div>
 
     <!-- 主体 3 栏容器 -->
     <div class="docs-main-container">
       <!-- 左侧：多级树形目录 -->
-      <aside id="docsSidebar" class="docs-sidebar">
+      <aside id="docsSidebar" class="docs-sidebar" aria-label="知识库目录导航">
         <div class="sidebar-search-box">
           <input id="sidebarFilter" type="text" class="sidebar-filter-input" placeholder="过滤当前目录..." />
         </div>

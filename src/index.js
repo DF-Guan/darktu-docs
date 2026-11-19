@@ -40,23 +40,42 @@ export class DarktuDocsApp {
     applyTheme(getInitialTheme());
     document.getElementById("themeToggleBtn")?.addEventListener("click", () => toggleTheme());
 
-    // 2. 移动端侧边栏切换
-    const toggleBtn = document.getElementById("mobileMenuToggle");
-    const sidebar = document.getElementById("docsSidebar");
-    const backdrop = document.getElementById("sidebarBackdrop");
-    toggleBtn?.addEventListener("click", () => {
-      sidebar?.classList.toggle("mobile-open");
-      if (backdrop) backdrop.style.display = sidebar?.classList.contains("mobile-open") ? "block" : "none";
-    });
-    backdrop?.addEventListener("click", () => {
-      sidebar?.classList.remove("mobile-open");
-      if (backdrop) backdrop.style.display = "none";
-    });
+    // 2. 移动端侧边栏无障碍切换
+    this.setupMobileSidebar();
 
     // 3. 渲染目录树并监听路由
     this.renderSidebar();
     window.addEventListener("hashchange", () => this.handleRoute());
     this.handleRoute();
+  }
+
+  setupMobileSidebar() {
+    const toggleBtn = document.getElementById("mobileMenuToggle");
+    const sidebar = document.getElementById("docsSidebar");
+    const backdrop = document.getElementById("sidebarBackdrop");
+    toggleBtn?.addEventListener("click", () => this.setMobileSidebarOpen(!sidebar?.classList.contains("mobile-open")));
+    backdrop?.addEventListener("click", () => this.setMobileSidebarOpen(false));
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && sidebar?.classList.contains("mobile-open")) this.setMobileSidebarOpen(false);
+    });
+  }
+
+  setMobileSidebarOpen(open) {
+    const sidebar = document.getElementById("docsSidebar");
+    const toggleBtn = document.getElementById("mobileMenuToggle");
+    const backdrop = document.getElementById("sidebarBackdrop");
+    const isOpen = Boolean(open);
+    sidebar?.classList.toggle("mobile-open", isOpen);
+    toggleBtn?.setAttribute("aria-expanded", String(isOpen));
+    if (backdrop) {
+      backdrop.style.display = isOpen ? "block" : "none";
+      backdrop.setAttribute("aria-hidden", String(!isOpen));
+    }
+    if (isOpen) {
+      document.getElementById("sidebarFilter")?.focus();
+    } else if (document.activeElement && sidebar?.contains(document.activeElement)) {
+      toggleBtn?.focus();
+    }
   }
 
   getCurrentNavCardSlugs() {
@@ -122,20 +141,19 @@ export class DarktuDocsApp {
     const activeLink = document.getElementById(`link-${doc.id.replace(/\//g, "-")}`);
     activeLink?.classList.add("active");
 
-    document.getElementById("docsSidebar")?.classList.remove("mobile-open");
-    const backdrop = document.getElementById("sidebarBackdrop");
-    if (backdrop) backdrop.style.display = "none";
+    this.setMobileSidebarOpen(false);
 
     this.renderContent(doc, prev, next);
 
+    const isReduced = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (headingAnchor) {
       setTimeout(() => {
         const targetEl = document.getElementById(headingAnchor);
-        targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+        targetEl?.scrollIntoView({ behavior: isReduced ? "auto" : "smooth", block: "start" });
         targetEl?.classList.add("heading-highlight-pulse");
       }, 100);
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: isReduced ? "auto" : "smooth" });
     }
   }
 
