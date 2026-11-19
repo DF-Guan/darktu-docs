@@ -1,6 +1,7 @@
 /**
  * 维基百科式正文内链悬浮即时预览服务 (wikilinkPreview.js)
  * 鼠标轻触词条内链，无需离开页面即可快速预览目标词条的核心定义与摘要
+ * 具备视口边缘碰撞检测与自适应上下翻转 (Flip) 算法
  */
 
 import { getDocBySlugOrId } from "../data/navigation.js";
@@ -18,22 +19,98 @@ function ensurePopover() {
   return previewPopoverEl;
 }
 
-function extractLeadExcerpt(markdown) {
+/**
+ * 提取 Markdown 正文首段导语摘要作为预览内容
+ */
+export function extractLeadExcerpt(markdown) {
   if (!markdown) return "";
   const lines = markdown.split("\n");
+  let inCallout = false;
+
   for (const line of lines) {
     const trimmed = line.trim();
-    if (trimmed.startsWith(">") && !trimmed.startsWith("> [!")) {
+    if (trimmed.startsWith("> [!")) {
+      inCallout = true;
+      continue;
+    }
+    if (inCallout) {
+      if (trimmed.startsWith(">")) {
+        continue;
+      } else {
+        inCallout = false;
+      }
+    }
+    if (trimmed.startsWith(">")) {
       return trimmed.replace(/^>\s*/, "").replace(/[*_`]/g, "");
     }
   }
+
   for (const line of lines) {
     const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith("#") && !trimmed.startsWith("---") && !trimmed.startsWith(">") && !trimmed.startsWith("-")) {
+    if (
+      trimmed &&
+      !trimmed.startsWith("#") &&
+      !trimmed.startsWith("---") &&
+      !trimmed.startsWith(">") &&
+      !trimmed.startsWith("-")
+    ) {
       return trimmed.replace(/[*_`]/g, "");
     }
   }
   return "点击直接查看本条目详尽规范与解析。";
+}
+
+/**
+ * 视口边缘防溢出定位与翻转计算纯函数
+ * @param {DOMRect|Object} rect 触发内链的 getBoundingClientRect
+ * @param {number} popWidth 悬浮卡片宽度
+ * @param {number} popHeight 悬浮卡片高度
+ * @param {number} viewportWidth 视口宽度
+ * @param {number} viewportHeight 视口高度
+ * @param {number} [gap=8] 间距
+ * @param {number} [padding=16] 视口安全内边距
+ * @returns {{ left: number, top: number, placement: "bottom"|"top" }}
+ */
+export function calculatePopoverPosition(
+  rect,
+  popWidth,
+  popHeight,
+  viewportWidth,
+  viewportHeight,
+  gap = 8,
+  padding = 16
+) {
+  let placement = "bottom";
+  let left = rect.left;
+  let top = rect.bottom + gap;
+
+  // 1. 水平边界溢出修正 (防止右侧或左侧超出视口)
+  if (left + popWidth > viewportWidth - padding) {
+    left = viewportWidth - popWidth - padding;
+  }
+  if (left < padding) {
+    left = padding;
+  }
+
+  // 2. 垂直溢出检测与自动翻转 (Flip)
+  const overflowsBottom = top + popHeight > viewportHeight - padding;
+  const overflowsTop = rect.top - popHeight - gap < padding;
+
+  if (overflowsBottom) {
+    // 底部空间不足，检查顶部空间是否充足
+    if (!overflowsTop || rect.top > viewportHeight - rect.bottom) {
+      top = Math.max(padding, rect.top - popHeight - gap);
+      placement = "top";
+    } else {
+      // 极端情况（如视口高度较小），贴紧底部安全区
+      top = Math.max(padding, viewportHeight - popHeight - padding);
+    }
+  } else {
+    // 底部空间充足，但确保 top 不小于 padding
+    top = Math.max(padding, top);
+  }
+
+  return { left, top, placement };
 }
 
 export function setupWikilinkPreview() {
@@ -68,25 +145,22 @@ export function setupWikilinkPreview() {
       </div>
     `;
 
-    // 计算定位与防止越界
+    // 计算定位与自适应翻转防溢出
     const rect = link.getBoundingClientRect();
-    const popWidth = 340;
-    const popHeight = 160;
+    const popWidth = popover.offsetWidth || 340;
+    const popHeight = popover.offsetHeight || 160;
 
-    let left = rect.left;
-    let top = rect.bottom + 8;
+    const pos = calculatePopoverPosition(
+      rect,
+      popWidth,
+      popHeight,
+      window.innerWidth,
+      window.innerHeight
+    );
 
-    if (left + popWidth > window.innerWidth - 20) {
-      left = window.innerWidth - popWidth - 20;
-    }
-    if (left < 16) left = 16;
-
-    if (top + popHeight > window.innerHeight - 20) {
-      top = rect.top - popHeight - 8;
-    }
-
-    popover.style.left = `${left}px`;
-    popover.style.top = `${top}px`;
+    popover.dataset.placement = pos.placement;
+    popover.style.left = `${pos.left}px`;
+    popover.style.top = `${pos.top}px`;
     popover.classList.add("visible");
   });
 

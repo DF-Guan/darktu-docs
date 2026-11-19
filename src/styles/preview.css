@@ -26,6 +26,14 @@
   transform: translateY(0);
 }
 
+.wikilink-preview-popover[data-placement="top"] {
+  transform: translateY(-6px);
+}
+
+.wikilink-preview-popover[data-placement="top"].visible {
+  transform: translateY(0);
+}
+
 .preview-popover-header {
   display: flex;
   align-items: center;
