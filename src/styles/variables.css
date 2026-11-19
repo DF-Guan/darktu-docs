@@ -103,3 +103,14 @@ html, body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
+
+/* 尊重操作系统动效减弱偏好 (Modern Web Guidance Motion Restraint) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
