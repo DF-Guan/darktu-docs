@@ -257,4 +257,331 @@ sequenceDiagram
 2. Aggarwal, P., et al. (2024). *GEO: Generative Engine Optimization*. **arXiv preprint arXiv:2311.09735**.
 3. Google Search Central (2024). *Topical Authority and Retrieval in AI-augmented Search Systems*.
 `,
+
+  "search-geo/agentic-rag-citation-protocol": `# Agentic RAG 与结构化引用归因协议 (Structured Citation Protocol)
+
+> “当多智能体进入自主检索与工具调用闭环，生成内容的真实性不再取决于概率分布，而取决于每一处事实声明是否能溯源到不可篡改的证据链。”
+
+---
+
+## 1. 传统 Naive RAG 的溯源断裂困境
+
+朴素检索增强生成（Naive RAG）采用固定的滑动窗口（如 512 Tokens）对文档进行切块，随后通过稠密向量余弦相似度召回候选文本段，并直接拼接进入 Prompt：
+
+\`\`\`mermaid
+flowchart LR
+    Doc["原始文档"] --> Chunk["朴素切块 (512 tokens)"]
+    Chunk --> Embed["向量化检索"]
+    Embed --> Prompt["Prompt 盲目拼接"]
+    Prompt --> LLM["大模型生成答案<br/>(归因模糊，幻觉频发)"]
+\`\`\`
+
+这种流水线暴露了三大致命技术缺陷：
+1. **语义碎片化与代词悬空**：固定长度切块极易切断核心命题，导致代词（“该系统”、“其算法”）与其先行词脱节；
+2. **粗粒度引证与无法复核**：模型在回答末尾泛泛列出参考链接，用户无法核实每一个关键句子究竟出自哪一段文字；
+3. **幻觉搭便车（Hallucination Free-riding）**：模型在具备部分参考资料时，仍会编造未提及的事实，并将其伪装成来自参考资料的结论。
+
+---
+
+## 2. Agentic RAG 自主检索架构
+
+为了解决上述问题，现代智能体检索架构（Agentic RAG）引入了**计划（Plan）➔ 检索（Retrieve）➔ 评估（Evaluate）➔ 反思（Reflect）**的自适应闭环机制：
+
+\`\`\`mermaid
+sequenceDiagram
+    autonumber
+    actor User as 用户提问
+    participant Planner as 规划智能体 (Query Planner)
+    participant Retriever as 多路检索引擎 (Hybrid Engine)
+    participant Evaluator as 证据自洽性评估器 (Self-RAG Evaluator)
+    participant Synthesizer as 归因合成器 (Attribution Synthesizer)
+
+    User->>Planner: 复杂知识问题
+    Planner->>Planner: 意图分解与假设性文档嵌入 (HyDE)
+    Planner->>Retriever: 并发发起结构化检索
+    Retriever-->>Evaluator: 召回原始候选切片
+    Evaluator->>Evaluator: 判别证据是否足以回答提问
+    alt 证据不足或存在矛盾
+        Evaluator->>Planner: 反思并调整检索关键词 (Query Reformulation)
+    else 证据确凿
+        Evaluator->>Synthesizer: 传递事实切片与元数据指纹
+        Synthesizer->>Synthesizer: 句级精细化归因与引用锚点注入
+        Synthesizer-->>User: 输出带数字指纹的结构化报告
+    end
+\`\`\`
+
+---
+
+## 3. 结构化引用归因协议 (Structured Citation Protocol)
+
+在多智能体协同流水线中，输出结果必须遵循机器可读的结构化协议：
+
+### 3.1 句级原子引用标记 (Sentence-Level Attribution)
+
+每一处陈述句之后必须明确绑定来源切片标识符：
+- \`[#1]\` 标识显式证据引用；
+- 引文内容必须在返回结果的 JSON Schema \`citations\` 数组中提供完整的原文字符串切片、哈希摘要与源文档 Slug。
+
+\`\`\`json
+{
+  "statement": "CommonMark 规范通过定界符栈算法消除了内联强调歧义 [#1]。",
+  "citations": [
+    {
+      "source_id": "markdown-specs/commonmark-core",
+      "slug": "syntax",
+      "exact_quote": "定界符栈 (Delimiter Stack) 算法是 CommonMark 处理强调标记的核心机制",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "confidence": 0.98
+    }
+  ]
+}
+\`\`\`
+
+---
+
+## 4. 可验证的拒答机制与置信度门禁
+
+当检索召回的切片支持度低于预设阈值 $\\tau$ 时，智能体必须主动拒绝猜测：
+
+$$\\text{Confidence}(S \\mid E) = \\frac{\\sum_{e_i \\in E} \\text{NLI}_{\\text{entailment}}(e_i, S)}{|E|}$$
+
+- 当 $\\text{Confidence} < 0.75$ 时，触发规范化拒答响应：“在当前给定的技术参考文档中未检索到充分证据，无法做出肯定判断。”
+- 这种自律性彻底杜绝了模型在学术与工程文档中的误导性回答，与[现代技术写作风格指南](#/technical-writing-guide)的严谨要求高度契合。
+
+---
+
+## 5. 与 Darktu 知识库的工程联动
+
+Darktu 知识库全站采用标准[维基百科式内链](#/syntax)与[生成式引擎优化准则](#/generative-engine-optimization)，每个小节标题自带唯一锚点 ID，为 Agentic RAG 提供了天生友好的句级溯源基础设施。
+`,
+
+  "search-geo/multimodal-content-indexing": `# 多模态文档表征与 Late Interaction 检索架构 (ColPali)
+
+> “文档不仅是字符序列，更是二维版面语言。将表格、流程图与数学排版暴力压平成纯文本，无异于在检索前主动销毁一半的关键语义。”
+
+---
+
+## 1. 传统 OCR + 文本分块管线的退化缺陷
+
+传统的 PDF 与富媒体技术文档处理流水线高度依赖**光学字符识别（OCR）与启发式文本提取**：
+1. **表格结构彻底坍塌**：多行跨列复杂表格被提取后变成无规律的空格与换行，数字与表头对齐关系彻底丢失；
+2. **数学公式乱码**：分式、根号、积分等上标下标在纯文本流中变成无意义的随机字符，破坏了[KaTeX 数学排版](#/katex-vs-mathjax)的符号系统；
+3. **流程图与拓扑图不可读**：[Mermaid 流程图](#/mermaid-flowcharts)与 SVG 矢量图中的节点连接关系完全被 OCR 忽略。
+
+---
+
+## 2. ColPali 视觉语言模型端到端索引机制
+
+基于视觉语言模型（Vision-Language Models, VLM 如 PaliGemma）的新型检索架构 **ColPali** 颠覆了这一范式：
+- **页面即图像**：直接将文档页面渲染为高清图像（如 448x448 或 896x896 Patch）；
+- **端到端多向量输出**：视觉编码器为页面图像中的每一个图像 Patch 直接生成一个高维向量，完整保留了排版、颜色、字号和坐标信息；
+- **免去 OCR 损失**：无需 OCR 预处理，无惧多栏排版混排与字体嵌入异常。
+
+\`\`\`mermaid
+flowchart TD
+    subgraph Traditional["传统管线 (信息大量丢失)"]
+        PDF1["PDF / 富媒体文档"] --> OCR["OCR 识别"]
+        OCR --> Text["残缺纯文本"]
+        Text --> Splitting["文本粗暴切块"]
+        Splitting --> Emb1["单向量嵌入 (Single Vector)"]
+    end
+
+    subgraph ColPaliPipe["ColPali 多模态端到端管线 (全信息保真)"]
+        PDF2["PDF / 富媒体文档"] --> Render["页面高清视觉渲染"]
+        Render --> VLM["VLM 视觉多向量编码器"]
+        VLM --> MultiVec["Patch 级多向量索引 (Multi-Vectors)"]
+    end
+\`\`\`
+
+---
+
+## 3. Late Interaction (后期交互) 检索算子：MaxSim 模型
+
+ColPali 继承了 ColBERT 的 **Late Interaction（后期交互）** 哲学。在检索时，用户查询词的每个 Token 向量与文档的所有 Patch 向量进行最大相似度求和：
+
+$$\\text{Score}(Q, D) = \\sum_{q_i \\in Q} \\max_{d_j \\in D} \\left( \\frac{\\vec{q}_i \\cdot \\vec{d}_j}{\\|\\vec{q}_i\\| \\|\\vec{d}_j\\|} \\right)$$
+
+### 算子核心优势：
+- **细粒度保留**：查询中的每个单词都在寻找文档图像中最能佐证它的视觉区域（例如表格的某一行、图表的某个节点）；
+- **极致快速**：向量点积与最大值计算可通过矩阵硬件加速指令集（AVX-512、Metal、CUDA）并行完成，数万页文档毫秒级响应。
+
+---
+
+## 4. 混合检索实践：稀疏关键词与多模态稠密向量融合
+
+在生产级技术文档中心建设中，采用**混合检索（Hybrid Retrieval）**架构：
+
+| 检索维度 | 负责技术栈 | 擅长解决的问题 |
+| :--- | :--- | :--- |
+| **稀疏关键词检索 (BM25)** | 倒排索引分词 | 精确匹配函数名、错误代码、RFC 编号等专有名词 |
+| **稠密多向量检索 (ColPali)** | 视觉 Patch 索引 | 跨模态理解“流程图里的分支判断”、“复杂数据对比表” |
+| **倒数排名融合 (RRF)** | 混合排序算法 | 综合稀疏与稠密排名的倒数得分，产出最终推荐序列 |
+
+$$\\text{RRF\\_Score}(d) = \\sum_{m \\in M} \\frac{1}{k + r_m(d)}$$
+
+这种设计使知识库既能精准定位具体的代码标识符，又能从容回答跨图表的宏观系统设计提问。
+`,
+
+  "search-geo/synthetic-content-provenance": `# 生成式内容溯源与 C2PA 元数据加密存证 (C2PA Provenance)
+
+> “在 AI 生成内容指数级爆发的时代，可信度的建立依赖于透明的数字血缘（Provenance）与密码学存证，而非事后不可靠的概率鉴伪。”
+
+---
+
+## 1. 知识资产的真实性危机与存证需求
+
+生成式大模型在降低创作门槛的同时，也带来了严重的数字资产信任危机：
+- **文档恶意篡改与仿冒**：未经授权的爬虫抓取原创技术规范后，掺入恶意代码或推广链接重新发布；
+- **AI 幻觉冒充权威白皮书**：伪造的“技术白皮书”在互联网泛滥，传统搜索引擎难以鉴别真伪；
+- **知识产权确权争议**：在[知识共享 (CC) 许可协议](#/open-licenses-copyright)下，创作者署名权（Attribution）经常因多次转载而被彻底抹除。
+
+---
+
+## 2. C2PA 标准体系与内容凭据 (Content Credentials)
+
+由 Linux 基金会、Adobe、微软、Intel 等联合发起的 **C2PA (Coalition for Content Provenance and Authenticity)** 规范，已成为数字资产内容溯源的国际通用标准：
+
+\`\`\`mermaid
+flowchart TD
+    Asset["原创技术文档 / 插图资产"] --> SignEngine["C2PA 加密签名引擎"]
+    SignEngine --> Manifest["JUMBF 元数据清单 (Manifest)"]
+    Manifest --> Claim["作者身份声明 (Claim)"]
+    Manifest --> EditHistory["编辑动作审计轨迹 (Assertions)"]
+    Manifest --> Cert["X.509 权威公钥证书链"]
+    Manifest --> EncryptPackage["密码学签名封装 (Signed Asset)"]
+\`\`\`
+
+### C2PA Manifest 核心结构：
+1. **声明（Claim）**：明确资产的创作者公钥指纹、创建时间与版权许可；
+2. **断言集合（Assertions）**：记录素材来源、使用的 AI 模型版本（如使用了 AI 润色工具需透明披露）与编辑软件哈希；
+3. **数字签名（Signature）**：基于公钥基础设施（PKI）签发的 X.509 证书对清单整体进行非对称加密，一旦资产字节发生微小改动，签名即刻失效。
+
+---
+
+## 3. 大模型生成式文本的统计水印技术
+
+对于纯文本类文档，除了外置元数据清单，工业界还在探索**嵌入式软水印（Soft Watermarking）**：
+- **Green-Red 词表着色**：在 LLM 生成 Token 时，根据前序 Context 的伪随机哈希将词表分为“绿色候选集”与“红色候选集”，适度增加绿色词的采样概率；
+- **统计检验验证**：验证者在无需原文档对比的情况下，通过对文本 Token 的统计分布进行假设检验（z-test），即可在数学上以 $> 99.99\\%$ 的置信度判定该段文本是否由特定模型生成。
+
+---
+
+## 4. Darktu 知识库的本地优先存证实践
+
+结合 [Local-First 本地优先架构](#/local-first-architecture)，Darktu 文档体系建议创作者：
+- 在本地构建阶段即生成 Git Commit SHA 与资产内容的 SHA-256 指纹；
+- 将元数据以不可变 Frontmatter 与 C2PA 凭据并存的方式固化，确保文档在跨平台分发中始终保持血缘可追溯。
+`,
+
+  "search-geo/context-window-information-density": `# 长上下文窗口下的信息密度与 KV Cache 优化
+
+> “上下文窗口的扩展并不意味着可以无节制地倾倒低信噪比文本。模型注意力的衰减律与显存墙约束，使高密度信息架构成为现代文档工程的核心竞争力。”
+
+---
+
+## 1. 1M+ Token 窗口下的认知迷思：注意力“中道迷失”
+
+现代大语言模型已普遍支持 100K 乃至 1M+ Tokens 的超长上下文窗口。然而，在实际工程评测中发现：
+- **U 型注意力曲线（Lost-in-the-Middle）**：大模型对置于 Prompt 最前端（输入开头）和最末端（接近输出提示）的信息检索准确率最高，而处于文档中间部位的关键事实，召回成功率会大幅跌落；
+- **有效注意力衰减**：随着无用背景废话（如冗长无意义的客套描述）增多，自注意力机制（Self-Attention）的 Softmax 概率分布被杂乱噪音平摊，导致关键事实的激活权重显著下降。
+
+\`\`\`mermaid
+flowchart LR
+    Start["文档头部 (高注意力 98%)"] --- Middle["文档中部 (注意力谷底 45% · 容易迷失)"] --- End["文档尾部 (高注意力 95%)"]
+\`\`\`
+
+---
+
+## 2. KV Cache 经济学与 Prompt Caching 友好排版
+
+长文本上下文对大模型服务集群造成了巨大的显存压力。为了降低首字延迟（TTFT）与推理成本，主流模型服务提供商（如 Google Gemini、Anthropic Claude）广泛引入了 **Prompt Caching（前缀缓存）** 机制。
+
+### 前缀缓存命中原则：
+1. **静态公共前置**：系统指令、全库核心术语定义与标准 API 规范必须放置在 Prompt 最前列，确保跨请求 100% 命中缓存；
+2. **块边界对齐**：主流缓存系统以固定粒度（如 1024 或 2048 Tokens）为最小缓存单元。文档结构应当遵循清晰的章节分块；
+3. **动态变量后置**：用户的具体提问与即时上下文应当放置在末尾，避免微小的变动导致全量缓存失效。
+
+---
+
+## 3. 高信噪比 Markdown 文档结构准则
+
+为了最大化提升知识库在 AI 检索与大模型消费时的性能，应当严格践行以下准则：
+
+| 传统排版毛病 | 优化后高信噪比排版 | 优化带来的收益 |
+| :--- | :--- | :--- |
+| 充斥客套修饰与抒情虚词 | 开门见山呈现[金字塔核心论点](#/technical-writing-guide) | 降低 Token 消耗，避免注意力稀释 |
+| 零散叙述复杂参数 | 使用紧凑规范的 [GFM 表格](#/gfm-extensions) | 表格的二维拓扑利于 Transformer 建模 |
+| 截图展示配置与代码 | 原生代码围栏标注规范语言标签 | 杜绝 OCR 误读，原生保留可复制性 |
+| 标题层级混乱跳级 | 遵循 [WCAG 严格层级规范](#/accessibility-a11y) | 语义树规整，利于大纲级分块提取 |
+
+---
+
+## 4. 层次化摘要树与动态自适应注入
+
+在高级智能体工程中，面对超大规模文档集，建议采用**层次化摘要树（Hierarchical Summary Tree）**架构：
+- 顶层仅注入全系统的精炼摘要大纲（几十 K Tokens）；
+- 智能体定位到目标子模块后，再按需展开加载底层的详细实现切片。这种分级展开策略能够在保持全局视野的同时，将推理成本降至最低。
+`,
+
+  "search-geo/knowledge-graph-entity-linking": `# 知识图谱实体链接与维基内链向量化增强 (Entity Linking)
+
+> “孤立的文档是信息孤岛，双向链接与实体锚定则编织了概念拓扑。维基百科式的内链体系正是最自然的本地轻量知识图谱。”
+
+---
+
+## 1. 为什么纯向量近似检索无法理解概念依赖？
+
+基于 Embedding 向量的近似最近邻检索（ANN）擅长捕捉“词汇表面的语义亲近度”，但在处理严密的工程逻辑时存在天然盲区：
+- **无法理解传递依赖**：若概念 A 依赖 B，B 依赖 C，纯向量模型无法自主完成多跳图遍历；
+- **专有名词混淆**：对于具有多义性的专有缩写（例如 AST 既可指抽象语法树，也可指某种天文学缩写），向量嵌入容易在无上下文时发生混淆；
+- **缺乏因果与从属拓扑**：向量距离无法表达“父级分类”、“子规范”、“规范升级替代”等明确的有向图关系。
+
+---
+
+## 2. 维基百科式双向内链 (Wikilinks) 的图论抽象
+
+在技术文档工程中，每一次主动书写 \`[词条名](#/syntax)\` 的行为，本质上是在知识拓扑中人工标注了一条**强监督有向边（Directed Edge）**：
+
+\`\`\`mermaid
+graph TD
+    Spec["CommonMark 规范 (#/syntax)"] -->|包含定义| Callout["Callout 提示块 (#/callouts)"]
+    Spec -->|历史演进| Overview["Markdown 发展史 (#/overview)"]
+    Overview -->|排版需求| CLReq["W3C 中文排版 (#/w3c-clreq)"]
+    Spec -->|引用机制| HVV["HVV 向量投票 (#/hvv-hyperlink-vector-voting)"]
+    HVV -->|技术衍生| GEO["生成式引擎优化 (#/generative-engine-optimization)"]
+\`\`\`
+
+通过构建文档集合的**邻接矩阵（Adjacency Matrix）**与实体入度（In-degree）/出度（Out-degree）统计：
+- 高入度节点（如 \`#/syntax\`）被算法自然确立为“核心基石概念”；
+- 形成具有语义拓扑的**知识图谱（Knowledge Graph）**，为智能体提供了确定性的概念遍历地图。
+
+---
+
+## 3. GraphRAG 混合检索架构实战
+
+在先进检索架构 **GraphRAG** 中，图谱拓扑与向量检索实现双螺旋协同：
+
+\`\`\`mermaid
+flowchart TD
+    UserQ["用户提问: '如何排版带公式的数学表格？'"] --> VectorSearch["向量检索 (Vector ANN)"]
+    VectorSearch --> SeedNodes["命中种子节点 (Seed Nodes)"]
+    SeedNodes --> SubgraphExtract["子图扩展 (Subgraph Traversal · 2-Hop)"]
+    SubgraphExtract --> EntityContext["提取关联实体拓扑与属性"]
+    EntityContext --> Prompt["注入图增强上下文"]
+    Prompt --> LLM["大模型生成高一致性回答"]
+\`\`\`
+
+### 工作流优势：
+1. **种子命中**：向量检索首先从海量内容中找出 2~3 个最相关的核心节点；
+2. **多跳遍历**：沿着维基内链的有向边向外扩展 1~2 度（Hop），将相关联的前置依赖概念一并打包召回；
+3. **消除孤岛幻觉**：模型回答不仅引用了目标段落，还能条理分明地指出其前序依赖规范与后续落地指引。
+
+---
+
+## 4. Darktu 知识库的内链质量工程保障
+
+在 Darktu 知识库体系中，通过自动化测试矩阵（\`test/docs_integrity.test.js\`）对全量内链实施机械化门禁：
+- **零死链容忍**：每次构建全量扫描所有词条锚点引用（如 \`(#/syntax)\`），任何指向不存在词条的内链直接导致 CI 失败；
+- **即时悬浮预览**：前端挂载视口防溢出悬浮卡片（[Wikilink Preview Popover](#/syntax)），读者无需打断阅读即可实时展开内链定义，将图谱的实用价值最大化赋予终身学习者。
+`
 };

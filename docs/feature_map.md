@@ -9,21 +9,22 @@
 
 ### 1. 核心知识库百科渲染与大纲引擎 (`src/index.js`, `src/services/markdownRenderer.js`)
 * **User POV (用户入口)**:
-  - 访问 `https://docs.darktu.com`，点击左侧 9 大分类导航或通过 URL Hash (`#/overview`, `#/syntax`, `#/hvv-hyperlink-vector-voting`, `#/generative-engine-optimization` 等) 切换 40 篇词条；
+  - 访问 `https://docs.darktu.com`，点击左侧 9 大分类导航或通过 URL Hash (`#/overview`, `#/syntax`, `#/hvv-hyperlink-vector-voting`, `#/generative-engine-optimization` 等) 切换 45 篇词条；
   - 页面即时呈现元数据信息头（预计阅读时间、字数、修订年月）、右侧 TOC 目录与底栏上一篇/下一篇卡片。
 * **Agent Drive (机器驱动 API)**:
   - `DarktuDocsApp.handleRoute()`, `renderMarkdown(markdown)`, `getDocBySlugOrId(slug)`.
 * **Observable State (物理可观测证明状态)**:
-  - `npm test` 中 `test/docs_integrity.test.js` 断言 40 篇词条 100% 存在、无占位符、无空内链且字数 > 200。
+  - `npm test` 中 `test/docs_integrity.test.js` 断言 45 篇词条 100% 存在、无占位符、无空内链且字数 > 200。
 
 ### 2. 维基百科式条目内链悬浮即时预览 (`src/services/wikilinkPreview.js`)
 * **User POV (用户入口)**:
   - 鼠标悬停正文中任意 `a.wikilink` 词条内链；
-  - 无需离开当前段落，即时弹窗展示目标词条的分类徽标、标题、预计阅读时间与核心摘要。
+  - 无需离开当前段落，即时弹窗展示目标词条的分类徽标、标题、预计阅读时间与核心摘要；当内链位于屏幕下边缘或右边缘时，浮窗自适应翻转朝向（Flip），防止溢出视口。
 * **Agent Drive (机器驱动 API)**:
-  - `setupWikilinkPreview()`.
+  - `setupWikilinkPreview()`, `calculatePopoverPosition()`, `extractLeadExcerpt()`.
 * **Observable State (物理可观测证明状态)**:
-  - `#wikilinkPreviewPopover` 动态挂载到 DOM，检测鼠标移动时动态添加 `.visible` 类名与绝对定位计算。
+  - `#wikilinkPreviewPopover` 动态挂载到 DOM，检测鼠标移动时动态添加 `.visible` 与 `[data-placement="top"|"bottom"]` 属性；
+  - `test/wikilink_popover.test.js` 机械验证左、右、下边缘碰撞修正与无负坐标翻转。
 
 ### 3. 全键盘极速无障碍导航系统 (`src/services/keyboardShortcuts.js`)
 * **User POV (用户入口)**:
@@ -57,11 +58,12 @@
 ### 6. 全局检索高亮与方向键直达 (`src/services/searchService.js`, `src/services/searchUI.js`)
 * **User POV (用户入口)**:
   - 按 `Ctrl+K` 或 `/` 呼出弹窗，输入文字实时检索；
-  - 标题与摘要中的关键词高亮呈现，支持键盘上下方向键选择结果，按 Enter 回车跳转。
+  - 标题、英文缩写与摘要中的关键词高亮呈现，支持键盘上下方向键选择结果，按 Enter 回车跳转；按 Escape 快速关闭并原位恢复焦点。
 * **Agent Drive (机器驱动 API)**:
-  - `searchKnowledgeBase(query)`, `highlightKeywords(text, query)`, `setupSearchUI()`.
+  - `searchKnowledgeBase(query)`, `highlightKeywords(text, query)`, `setupSearchUI()`, `stripMarkdown(md)`, `extractAcronymsAndKeywords(text)`.
 * **Observable State (物理可观测证明状态)**:
-  - 关键词被 `<mark class="search-highlight">` 包裹，选中项具备 `.keyboard-active`。
+  - 关键词被 `<mark class="search-highlight">` 包裹，选中项具备 `.keyboard-active`；
+  - `test/search_relevance.test.js` 机械验证标题与缩写高权直达（如 HVV）、多词联合加权与 Markdown 格式符号净化。
 
 ---
 

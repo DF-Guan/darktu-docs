@@ -274,7 +274,7 @@ export const DOCS_NAVIGATION = [
   {
     id: "search-geo",
     title: "8. 检索工程与 GEO",
-    badge: "2 篇",
+    badge: "7 篇",
     items: [
       {
         id: "search-geo/hvv-hyperlink-vector-voting",
@@ -289,6 +289,41 @@ export const DOCS_NAVIGATION = [
         aliasSlugs: ["geo", "ai-search-geo"],
         title: "面向 AI 搜索的 GEO 架构指南",
         description: "AI 搜索双阶段 RAG 链路、大模型抗幻觉引用机制、信息增益与官网可信度优化。",
+      },
+      {
+        id: "search-geo/agentic-rag-citation-protocol",
+        slug: "agentic-rag-citation-protocol",
+        aliasSlugs: ["agentic-rag", "citation-protocol"],
+        title: "Agentic RAG 与结构化引用归因协议",
+        description: "自主规划检索闭环、假设性文档嵌入 (HyDE)、句子级证据哈希校验与防幻觉拒答门禁。",
+      },
+      {
+        id: "search-geo/multimodal-content-indexing",
+        slug: "multimodal-content-indexing",
+        aliasSlugs: ["multimodal-indexing", "colpali-late-interaction"],
+        title: "多模态文档表征与 Late Interaction 检索 (ColPali)",
+        description: "页面图像 Patch 多向量索引、MaxSim 相似度矩阵算子与混合检索 (BM25 + Dense) 实战。",
+      },
+      {
+        id: "search-geo/synthetic-content-provenance",
+        slug: "synthetic-content-provenance",
+        aliasSlugs: ["c2pa-provenance", "content-credentials"],
+        title: "生成式内容溯源与 C2PA 元数据加密存证",
+        description: "C2PA 标准规范、JUMBF 密码学清单与 X.509 证书链、LLM 统计水印与数字血缘审计。",
+      },
+      {
+        id: "search-geo/context-window-information-density",
+        slug: "context-window-information-density",
+        aliasSlugs: ["context-density", "kv-cache-optimization"],
+        title: "百万上下文窗口下的信息密度与 KV Cache 优化",
+        description: "规避 Lost-in-the-Middle 困境、Prompt Caching 前缀缓存命中与高信噪比 Markdown 排版准则。",
+      },
+      {
+        id: "search-geo/knowledge-graph-entity-linking",
+        slug: "knowledge-graph-entity-linking",
+        aliasSlugs: ["entity-linking", "graph-rag"],
+        title: "知识图谱实体链接与维基内链向量化增强",
+        description: "命名实体消歧 (NED)、维基内链有向图论建模、GraphRAG 子图扩展与多跳推理闭环。",
       },
     ],
   },
