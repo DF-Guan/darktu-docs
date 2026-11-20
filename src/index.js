@@ -199,7 +199,7 @@ export class DarktuDocsApp {
           ? '<li class="toc-item"><span style="color: var(--text-muted);">本条目暂无小节</span></li>'
           : toc.map((t) => `
             <li class="toc-item level-${t.level}">
-              <a href="#${t.id}" class="toc-link" data-heading="${t.id}">${t.text}</a>
+              <a href="#${t.id}" class="toc-link" data-heading="${t.id}" aria-current="false">${t.text}</a>
             </li>
           `).join("");
       setupTOCScrollSpy();

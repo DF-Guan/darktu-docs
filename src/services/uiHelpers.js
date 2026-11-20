@@ -51,14 +51,35 @@ export function setupCodeCopy() {
 }
 
 export function setupTOCScrollSpy() {
-  if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+  if (typeof window === "undefined") return;
+
+  const syncAriaCurrent = () => {
+    const currentLink = document.querySelector(".toc-link:target-current");
+    document.querySelectorAll(".toc-link").forEach((link) => {
+      const isActive = link === currentLink;
+      link.setAttribute("aria-current", isActive ? "true" : "false");
+    });
+  };
+
+  // Google Modern Web Guidance: Modern CSS scroll-target-group & :target-current
+  if (typeof CSS !== "undefined" && CSS.supports && CSS.supports("scroll-target-group: auto")) {
+    syncAriaCurrent();
+    document.addEventListener("scrollend", syncAriaCurrent);
+    return;
+  }
+
+  // Fallback for browsers without scroll-target-group support
+  if (!("IntersectionObserver" in window)) return;
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const id = entry.target.id;
-          document.querySelectorAll(".toc-link").forEach((l) => l.classList.remove("active"));
-          document.querySelector(`.toc-link[data-heading="${id}"]`)?.classList.add("active");
+          document.querySelectorAll(".toc-link").forEach((l) => {
+            const isActive = l.getAttribute("data-heading") === id;
+            l.classList.toggle("active", isActive);
+            l.setAttribute("aria-current", isActive ? "true" : "false");
+          });
         }
       });
     },
@@ -95,8 +116,11 @@ export function setupHeadingAnchorLinks(getCurrentDoc) {
       showToast("已定位至小节：" + heading.innerText.replace("#", "").trim());
     });
 
-    // 顺畅滚入视野并添加呼吸强调高亮
+    // 顺畅滚入视野并添加呼吸强调高亮与焦点管理
     heading.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (typeof heading.focus === "function") {
+      heading.focus({ preventScroll: true });
+    }
     heading.classList.add("heading-highlight-pulse");
     setTimeout(() => {
       heading.classList.remove("heading-highlight-pulse");
