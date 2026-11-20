@@ -188,7 +188,7 @@ export function renderMarkdown(markdown) {
         });
       }
 
-      output.push(`<h${level} id="${id}" class="heading-anchor"><a href="#${id}" class="heading-anchor-link">#</a>${renderInline(titleRaw)}</h${level}>`);
+      output.push(`<h${level} id="${id}" class="heading-anchor" tabindex="-1"><a href="#${id}" class="heading-anchor-link" aria-label="章节直达锚点">#</a>${renderInline(titleRaw)}</h${level}>`);
       continue;
     }
 
