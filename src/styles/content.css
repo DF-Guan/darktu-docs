@@ -174,18 +174,18 @@
   color: var(--text-secondary);
 }
 
-/* 维基百科式条目内链 (Wikilinks) */
+/* 维基百科式条目内链 (Wikilinks) - 遵循 Modern Web Guidance custom-text-decorations 原生规范 */
 a.wikilink {
   color: var(--accent-primary);
-  text-decoration: none;
-  border-bottom: 1px dashed var(--accent-primary);
-  padding-bottom: 1px;
+  text-decoration: underline dashed var(--accent-primary);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
   transition: all 0.15s ease;
 }
 
 a.wikilink:hover {
   color: var(--accent-hover);
-  border-bottom-style: solid;
+  text-decoration-style: solid;
   background: var(--accent-light);
   border-radius: 2px;
 }

@@ -26,7 +26,7 @@ export function setupSearchUI() {
   const closeSearch = () => {
     modal?.classList.add("hidden");
     if (input) input.value = "";
-    if (resultsContainer) resultsContainer.innerHTML = "";
+    if (resultsContainer) resultsContainer.replaceChildren();
     activeIndex = -1;
 
     if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
