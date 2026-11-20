@@ -17,6 +17,26 @@ function escapeHtml(str) {
 }
 
 /**
+ * 过滤与转义潜在危险 URL 协议 (防御 javascript: 等伪协议注入)
+ */
+export function sanitizeUrl(url) {
+  if (!url) return "#";
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("./") ||
+    trimmed.startsWith("../") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("mailto:")
+  ) {
+    return trimmed.replace(/"/g, "%22");
+  }
+  return "#";
+}
+
+/**
  * 生成标题的安全 URL 锚点 slug
  */
 export function slugify(text) {
@@ -62,14 +82,16 @@ function renderInline(text) {
 
   // 9. 图片 ![alt](url)
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, url) => {
-    return `<figure class="docs-figure"><img src="${url}" alt="${escapeHtml(alt)}" class="docs-image" loading="lazy" />${alt ? `<figcaption class="docs-figcaption">${escapeHtml(alt)}</figcaption>` : ""}</figure>`;
+    const safeSrc = sanitizeUrl(url);
+    return `<figure class="docs-figure"><img src="${safeSrc}" alt="${escapeHtml(alt)}" class="docs-image" loading="lazy" />${alt ? `<figcaption class="docs-figcaption">${escapeHtml(alt)}</figcaption>` : ""}</figure>`;
   });
 
   // 10. 超链接 [text](url)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, label, url) => {
-    const isExternal = url.startsWith("http");
-    const isWiki = url.startsWith("#/");
-    return `<a href="${url}" class="${isWiki ? "wikilink" : ""}" ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`;
+    const safeUrl = sanitizeUrl(url);
+    const isExternal = safeUrl.startsWith("http");
+    const isWiki = safeUrl.startsWith("#/");
+    return `<a href="${safeUrl}" class="${isWiki ? "wikilink" : ""}" ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`;
   });
 
   return html;
@@ -105,7 +127,7 @@ export function renderMarkdown(markdown) {
           <div class="code-block-container" data-lang="${codeBlockLang || "text"}">
             <div class="code-block-header">
               <span class="code-lang-label">${codeBlockLang || "text"}</span>
-              <button class="code-copy-btn" onclick="window.__copyCodeBlock(this)">
+              <button class="code-copy-btn" type="button" aria-label="复制代码块内容" onclick="window.__copyCodeBlock(this)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                 <span>复制</span>
               </button>
