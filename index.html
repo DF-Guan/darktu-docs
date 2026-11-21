@@ -10,10 +10,56 @@
   <link rel="canonical" href="https://docs.darktu.com/" />
   <link rel="stylesheet" href="./src/styles/main.css" />
   <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Darktu Docs" />
   <meta property="og:title" content="Darktu 知识库 - Markdown 与排版工程学习百科" />
   <meta property="og:description" content="面向创作者与开发者的开放学习百科，系统解析 Markdown 语法规范、中文排版美学与数字出版工程技术。" />
   <meta property="og:url" content="https://docs.darktu.com/" />
   <meta property="og:image" content="https://docs.darktu.com/logo-128.png" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Darktu 知识库 - Markdown 与排版工程学习百科" />
+  <meta name="twitter:description" content="面向创作者与开发者的开放学习百科，系统涵盖 CommonMark / GFM 规范演进、W3C 中文排版需求 (CLReq)、LaTeX 数学公式、Mermaid 图表与 AI 生成式引擎优化 (GEO)。" />
+  <meta name="twitter:image" content="https://docs.darktu.com/logo-128.png" />
+  <!-- Schema.org JSON-LD for AI Search Engines & GEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://docs.darktu.com/#website",
+        "url": "https://docs.darktu.com/",
+        "name": "Darktu 知识库",
+        "description": "面向创作者与开发者的开放学习百科，系统涵盖 CommonMark / GFM 规范演进、W3C 中文排版需求 (CLReq)、LaTeX 数学公式、Mermaid 图表与 AI 生成式引擎优化 (GEO)。",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Darktu",
+          "url": "https://darktu.com",
+          "logo": "https://docs.darktu.com/logo-128.png"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://docs.darktu.com/#/search?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "TechArticle",
+        "@id": "https://docs.darktu.com/#article",
+        "headline": "Darktu Markdown 与排版工程学习百科",
+        "url": "https://docs.darktu.com/",
+        "inLanguage": "zh-CN",
+        "isAccessibleForFree": true,
+        "learningResourceType": "Knowledge Base",
+        "about": ["Markdown", "W3C CLReq", "CommonMark", "GFM", "LaTeX", "Mermaid", "GEO", "MCP", "WebGPU"]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <!-- 顶部阅读进度条 -->
@@ -23,7 +69,7 @@
     <!-- 顶部 Header -->
     <header class="docs-header">
       <div class="header-left">
-        <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="打开目录菜单" aria-expanded="false" aria-controls="docsSidebar">
+        <button id="mobileMenuToggle" class="mobile-menu-toggle" type="button" aria-label="打开目录菜单" aria-expanded="false" aria-controls="docsSidebar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
         <a href="#/overview" class="docs-brand">
@@ -35,7 +81,7 @@
 
       <!-- 全局搜索按钮 (Cmd+K) -->
       <div class="header-center">
-        <button id="headerSearchBtn" class="header-search-btn" title="搜索知识词条 (Ctrl+K / Cmd+K)">
+        <button id="headerSearchBtn" class="header-search-btn" type="button" aria-label="搜索知识库词条 (快捷键 Ctrl+K 或 Cmd+K)" title="搜索知识词条 (Ctrl+K / Cmd+K)">
           <div class="search-placeholder">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             <span>搜索语法规则、排版规范与技术术语...</span>
@@ -66,13 +112,13 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
           <span>GitHub</span>
         </a>
-        <button id="fontSizeToggleBtn" class="font-size-toggle-btn" title="调整正文字号 (紧凑/标准/舒适/大字)">
+        <button id="fontSizeToggleBtn" class="font-size-toggle-btn" type="button" aria-label="调整正文字号 (紧凑/标准/舒适/大字)" title="调整正文字号 (紧凑/标准/舒适/大字)">
           <span>字号: </span><span class="font-size-label">标准</span>
         </button>
-        <button id="shortcutsHelpBtn" class="font-size-toggle-btn" title="查看键盘快捷键帮助 (?)">
+        <button id="shortcutsHelpBtn" class="font-size-toggle-btn" type="button" aria-label="查看键盘快捷键帮助 (?)" title="查看键盘快捷键帮助 (?)">
           <span class="font-size-label">⌨️ 快捷键</span>
         </button>
-        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+        <button id="themeToggleBtn" class="theme-toggle-btn" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
         </button>
       </div>
@@ -103,7 +149,7 @@
       <aside class="docs-toc">
         <div class="toc-header">
           <span class="toc-title">目录</span>
-          <button id="backToTopBtn" class="toc-back-top" title="返回顶部">↑ 顶部</button>
+          <button id="backToTopBtn" class="toc-back-top" type="button" aria-label="返回页面顶部" title="返回顶部">↑ 顶部</button>
         </div>
         <ul id="tocList" class="toc-list"></ul>
         <div class="toc-shortcuts-hint" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
@@ -120,8 +166,9 @@
     <div id="docsToast" class="docs-toast">已复制本节锚点直达链接 🔗</div>
 
     <!-- 全局检索弹窗 (Ctrl+K) -->
-    <div id="searchModalOverlay" class="search-modal-overlay hidden" role="dialog" aria-modal="true">
+    <div id="searchModalOverlay" class="search-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
       <div class="search-modal">
+        <h2 id="searchModalTitle" class="sr-only">全库知识检索</h2>
         <div class="search-input-wrapper">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input id="searchInputField" class="search-input-field" type="text" placeholder="输入关键字搜索全库规范、公式与技术文章..." autocomplete="off" />

@@ -20,7 +20,7 @@ async function runTests() {
 
   // 1. 验证分类与章节定义完备性
   assert(Array.isArray(DOCS_NAVIGATION) && DOCS_NAVIGATION.length >= 7, "Must have at least 7 categories");
-  assert(ALL_DOCS.length === 45, `Must have exactly 45 chapters across 9 categories, got: ${ALL_DOCS.length}`);
+  assert(ALL_DOCS.length === 47, `Must have exactly 47 chapters across 9 categories, got: ${ALL_DOCS.length}`);
 
   // 2. 验证每一篇文章的内容真实存在且不低于 200 字符
   ALL_DOCS.forEach((doc) => {
