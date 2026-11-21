@@ -584,4 +584,163 @@ flowchart TD
 - **零死链容忍**：每次构建全量扫描所有词条锚点引用（如 \`(#/syntax)\`），任何指向不存在词条的内链直接导致 CI 失败；
 - **即时悬浮预览**：前端挂载视口防溢出悬浮卡片（[Wikilink Preview Popover](#/syntax)），读者无需打断阅读即可实时展开内链定义，将图谱的实用价值最大化赋予终身学习者。
 `
+,
+
+  "search-geo/mcp-model-context-protocol": `# Model Context Protocol (MCP) 架构与生产级智能体工具互联
+
+> “当大语言模型从单向对话迈向自主行动，孤立的 API 接口必然走向结构化的开放协议。” —— Model Context Protocol (MCP) 为智能体与外部数字世界搭建了安全、解耦与通用的总线通道。
+
+---
+
+## 1. 为什么需要 MCP：解决 N×M 接口碎片化爆炸
+
+在传统大模型应用开发中，为模型接入外部能力（如本地代码库、数据库、浏览器或工坊服务）通常依赖针对各大模型特有格式的**自定义函数调用（Function Calling）**：
+
+\\\`\\\`\\\`mermaid
+flowchart LR
+    subgraph Legacy["传统碎片化直连 (N × M 复杂度)"]
+        direction LR
+        A1["Agent 客户端 A"] --> T1["GitHub API"]
+        A1 --> T2["Postgres 数据库"]
+        A2["Agent 客户端 B"] --> T1
+        A2 --> T3["本地文件系统"]
+        A3["Agent 客户端 C"] --> T2
+        A3 --> T3
+    end
+\\\`\\\`\\\`
+
+这种点对点紧耦合架构面临以下严峻挑战：
+1. **开发与维护成本倍增**：每新增一个智能体客户端，必须为每个外部数据源重复编写适配器；
+2. **安全隔离缺失**：工具代码直接运行在主客户端进程内部，权限难以细粒度沙箱化；
+3. **协议无法互通**：无法跨不同开发工具、IDE 与独立智能体环境无缝复用工具定义。
+
+---
+
+## 2. Client-Host-Server 三层分层架构
+
+Model Context Protocol 确立了解耦的 Client-Host-Server 拓扑架构：
+
+\\\`\\\`\\\`mermaid
+flowchart TD
+    subgraph Host["Host 宿主环境 (如 IDE / 智能体工作台)"]
+        Client["MCP Client (协议客户端)"]
+    end
+    
+    subgraph Transports["通信传输层 (Transport Layer)"]
+        Pipe["标准输入输出管道 (stdio)"]
+        HTTP["HTTP / Server-Sent Events (SSE)"]
+    end
+    
+    subgraph Servers["MCP Servers (独立隔离服务)"]
+        S1["Filesystem MCP Server"]
+        S2["Database & RAG MCP Server"]
+        S3["Darktu Atelier & Canvas MCP Server"]
+    end
+    
+    Client -->|JSON-RPC 2.0| Pipe --> S1
+    Client -->|JSON-RPC 2.0| HTTP --> S2
+    Client -->|JSON-RPC 2.0| Pipe --> S3
+\\\`\\\`\\\`
+
+### 架构各层核心权责：
+- **MCP Host (宿主)**：发起智能体交互的用户应用（如 Antigravity、Cursor、Claude Desktop）；负责控制安全审批、生命周期与环境注入；
+- **MCP Client (客户端)**：Host 内部维护的协议适配模块，负责与 MCP Server 建立点对点通信会话，执行能力协商；
+- **MCP Server (服务端)**：独立的轻量级进程，专职对外暴露特定的上下文数据与工具能力，遵循最小权限原则隔离执行。
+
+---
+
+## 3. MCP 三大核心能力原语与协议生命周期
+
+MCP 协议规范基于 **JSON-RPC 2.0** 格式定义，主要抽象为三大能力维度：
+
+| 原语名称 | 协议方法 (Methods) | 核心语义与交互形态 |
+| :--- | :--- | :--- |
+| **Prompts (提示词模板)** | \\\`prompts/list\\\`, \\\`prompts/get\\\` | 服务端预设的动态工作流提示词，支持参数化填充，便于用户或智能体按需调遣。 |
+| **Resources (只读资源)** | \\\`resources/list\\\`, \\\`resources/read\\\`, \\\`resources/subscribe\\\` | 类似 REST 资源的静态/动态数据（如文档、日志、系统配置），支持 URI 寻址与内容变更订阅推送。 |
+| **Tools (可执行工具)** | \\\`tools/list\\\`, \\\`tools/call\\\` | 具有明确 JSON Schema 参数约束的函数，由大模型决定调用时机，服务端执行后返回结构化结果。 |
+
+### 协议初始化生命周期：
+1. **握手协商 (\\\`initialize\\\`)**：Client 发送其协议版本与支持的能力子集，Server 响应其版本与所支持的原语集合；
+2. **通知就绪 (\\\`notifications/initialized\\\`)**：Client 确认握手完成，正式进入双向能力交互阶段；
+3. **能力动态广播**：当 Server 的工具或资源列表发生变更时，主动发送 \\\`notifications/tools/list_changed\\\` 通知客户端拉取最新 Schema。
+
+---
+
+## 4. 零信任安全沙箱与审计门禁
+
+在生产级智能体工程中，赋予模型自主调用外部工具的权力伴随着严重的安全隐患。MCP 实施了多层防线：
+- **进程级权限最小化**：Server 运行在受限的独立子进程中，严格限制文件系统访问边界，杜绝跨目录路径穿越（Path Traversal）；
+- **操作可逆性与人机审批**：对于只读操作（如查询、搜索），可自动放行；对于具有副作用的写入、修改与删除操作，强制触发 Host 侧的人工二次确认门禁；
+- **多智能体工具总线**：在协同架构（如 [Agentic RAG](#/agentic-rag-citation-protocol) 与 [超链接向量投票 (HVV)](#/hvv-hyperlink-vector-voting)）中，MCP 充当标准化的上下文总线，确保每个动作均具备精确的物理审计日志。
+`,
+
+  "search-geo/webgpu-client-side-inference": `# WebGPU 客户端大模型与高通量着色器并行计算
+
+> “当算力从遥远的云端机房向端侧移动，浏览器不再仅仅是文档渲染器，而是具备数百核心并行运算能力的异构计算平台。” —— WebGPU 开启了纯客户端大模型与高性能图像画布的原生时代。
+
+---
+
+## 1. Web 异构计算演进：从 Canvas 2D 到 WebGPU
+
+万维网图形与计算能力经历了三代重大架构跃迁：
+
+\\\`\\\`\\\`mermaid
+flowchart LR
+    A["第一代: Canvas 2D<br/>CPU 串行光栅化<br/>主线程易阻塞"] --> B["第二代: WebGL (OpenGL ES 2/3)<br/>固定管线/受限着色器<br/>严重依赖驱动层转化"]
+    B --> C["第三代: WebGPU<br/>现代图形底层映射 (Vulkan / Metal / Direct3D 12)<br/>通用计算着色器 (Compute Shaders)"]
+\\\`\\\`\\\`
+
+### WebGPU 相较于 WebGL 的关键突破：
+1. **直接映射现代操作系统底层 API**：DirectX 12 (Windows)、Metal (macOS/iOS) 与 Vulkan (Linux/Android)，CPU 驱动层开销大幅缩减；
+2. **原生通用计算支持 (General-Purpose GPU)**：通过专门的**计算管线 (Compute Pipeline)**，直接执行多维矩阵乘法 (GEMM)、卷积与张量变换，无需伪装为纹理像素渲染；
+3. **多线程并发安全**：支持通过 Web Workers 跨线程提交渲染与计算指令，彻底释放浏览器 UI 渲染主线程。
+
+---
+
+## 2. WGSL 架构与计算着色器核心工作流
+
+WebGPU 采用 **WGSL (WebGPU Shading Language)** 作为官方着色器语言。在客户端执行张量计算的核心流程如下：
+
+\\\`\\\`\\\`mermaid
+flowchart TD
+    JS["JavaScript / TypeScript 主逻辑"] --> CreateBuffer["创建 GPUBuffer (存储输入张量与权重)"]
+    CreateBuffer --> Pipeline["创建 Compute Pipeline (载入 WGSL 计算着色器)"]
+    Pipeline --> BindGroup["绑定数据 BindGroup (对齐存储缓冲区与参数)"]
+    BindGroup --> Dispatch["分发工作组 dispatchWorkgroups(X, Y, Z)"]
+    Dispatch --> GPU["GPU 硬件执行数百并行工作组计算"]
+    GPU --> Readback["异步将结果映射回 CPU 内存 (mapAsync)"]
+\\\`\\\`\\\`
+
+### WGSL 矩阵乘法计算着色器核心示意：
+\\\`\\\`\\\`wgsl
+@group(0) @binding(0) var<storage, read> matrixA : array<f32>;
+@group(0) @binding(1) var<storage, read> matrixB : array<f32>;
+@group(0) @binding(2) var<storage, read_write> matrixC : array<f32>;
+
+@compute @workgroup_size(16, 16)
+fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
+    let row = global_id.x;
+    let col = global_id.y;
+    // 并行计算矩阵点积
+    var sum = 0.0;
+    for (var k = 0u; k < 64u; k = k + 1u) {
+        sum = sum + matrixA[row * 64u + k] * matrixB[k * 64u + col];
+    }
+    matrixC[row * 64u + col] = sum;
+}
+\\\`\\\`\\\`
+
+---
+
+## 3. 端侧大模型 (LLM) 推理与客户端应用落地
+
+借助 WebGPU，现代前端框架（如 WebLLM、Transformers.js 与 ONNX Runtime Web）已经能够直接在浏览器本地运行 1B~8B 规模的语言模型、CLIP 视觉表征模型与超分辨率滤镜：
+
+### 生产级落地优势：
+1. **100% 隐私零外泄**：文字排版建议、知识库问答或敏感图像无需上传至云端服务器，全程在用户终端设备内存中闭环计算；
+2. **零服务端带宽与推理账单**：计算算力由用户终端 GPU 承担，大幅降低产品运营成本；
+3. **与 Canvas/WASM 图像管线零拷贝互通**：
+   - 在 Darktu 创意矩阵（如 [Darktu 图像工坊](https://image-atelier.darktu.com) 与 [Darktu 专业画布](https://canvas.darktu.com)）中，WebGPU 纹理与 Canvas 共享显存上下文，避免了频繁在 CPU 与 GPU 之间进行巨大的 ImageData 内存拷贝；
+   - 配合 [面向 AI 搜索的 GEO 架构指南](#/generative-engine-optimization) 与 [百万上下文窗口下的信息密度](#/context-window-information-density)，构建起极速、高安全、可离线自运转的下一代 Web 应用体验。
+`
 };

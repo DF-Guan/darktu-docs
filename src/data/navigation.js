@@ -274,7 +274,7 @@ export const DOCS_NAVIGATION = [
   {
     id: "search-geo",
     title: "8. 检索工程与 GEO",
-    badge: "7 篇",
+    badge: "9 篇",
     items: [
       {
         id: "search-geo/hvv-hyperlink-vector-voting",
@@ -324,6 +324,20 @@ export const DOCS_NAVIGATION = [
         aliasSlugs: ["entity-linking", "graph-rag"],
         title: "知识图谱实体链接与维基内链向量化增强",
         description: "命名实体消歧 (NED)、维基内链有向图论建模、GraphRAG 子图扩展与多跳推理闭环。",
+      },
+      {
+        id: "search-geo/mcp-model-context-protocol",
+        slug: "mcp-model-context-protocol",
+        aliasSlugs: ["mcp", "model-context-protocol"],
+        title: "Model Context Protocol (MCP) 架构与智能体工具互联",
+        description: "Client-Host-Server 三层解耦拓扑、JSON-RPC 2.0 传输层、三大原语与零信任沙箱安全门禁。",
+      },
+      {
+        id: "search-geo/webgpu-client-side-inference",
+        slug: "webgpu-client-side-inference",
+        aliasSlugs: ["webgpu", "client-side-inference"],
+        title: "WebGPU 客户端大模型与高通量着色器并行计算",
+        description: "现代图形与通用计算架构跃迁、WGSL 计算着色器、端侧张量运算加速与 Canvas 零拷贝纹理共享。",
       },
     ],
   },
