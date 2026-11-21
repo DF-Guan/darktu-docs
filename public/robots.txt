@@ -1,0 +1,49 @@
+# ==============================================================================
+# Darktu Docs (docs.darktu.com) Robots Exclusion Protocol
+# 允许所有主流搜索引擎与次世代生成式 AI 搜索爬虫完整索引知识库
+# ==============================================================================
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# AI & Generative Search Engine Crawlers (GEO Optimization)
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# XML Sitemap Direct Link
+Sitemap: https://docs.darktu.com/sitemap.xml
