@@ -27,6 +27,6 @@ jobs:
       - name: Existing project regression gates
         run: npm test
       - name: Agent collaboration and staged branch policy tests
-        run: node --test test/agent_sync.test.mjs test/agent_launch.test.mjs test/agent_cli_entry.test.mjs test/branch_ruleset.test.mjs test/shortcuts_modal_a11y.test.js test/mobile_sidebar_a11y.test.js test/search_relevance.test.js test/wikilink_popover.test.js test/markdown_renderer_security.test.js test/toc_scrollspy_a11y.test.js test/seo_and_ui_inspection.test.js test/mcp_server.test.mjs test/indexnow.test.mjs
+        run: node --test test/agent_sync.test.mjs test/agent_launch.test.mjs test/agent_cli_entry.test.mjs test/branch_ruleset.test.mjs test/shortcuts_modal_a11y.test.js test/mobile_sidebar_a11y.test.js test/search_relevance.test.js test/wikilink_popover.test.js test/markdown_renderer_security.test.js test/toc_scrollspy_a11y.test.js test/seo_and_ui_inspection.test.js test/mcp_server.test.mjs test/indexnow.test.mjs test/article_feedback.test.js
       - name: Production build verification (no deployment)
         run: npm run build

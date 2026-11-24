@@ -18,6 +18,7 @@ import {
 import { setupWikilinkPreview } from "./services/wikilinkPreview.js";
 import { setupKeyboardShortcuts } from "./services/keyboardShortcuts.js";
 import { setupReadingSettings } from "./services/readingSettings.js";
+import { setupArticleFeedback } from "./services/feedbackService.js";
 
 export class DarktuDocsApp {
   constructor() {
@@ -208,6 +209,7 @@ export class DarktuDocsApp {
     if (footerEl) {
       const { editUrl, issueUrl } = getWikiEditLinks(doc);
       footerEl.innerHTML = `
+        <div id="docsFeedbackContainer" class="docs-feedback-container"></div>
         <div class="article-wiki-footer">
           <div class="wiki-footer-left">
             <span>本条目内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> 开放许可，面向大众自由阅读学习。</span>
@@ -222,6 +224,7 @@ export class DarktuDocsApp {
           ${next ? `<a href="#/${next.slug}" class="nav-card next"><span class="nav-card-label">下一篇 ] →</span><span class="nav-card-title">${next.title}</span></a>` : '<div style="flex:1;"></div>'}
         </div>
       `;
+      setupArticleFeedback(document.getElementById("docsFeedbackContainer"), doc);
     }
 
     document.title = `${doc.title} - Darktu 知识库`;
