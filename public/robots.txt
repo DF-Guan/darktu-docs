@@ -8,7 +8,7 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 
-# AI & Generative Search Engine Crawlers (GEO Optimization)
+# Global & Regional Search Engine Crawlers
 User-agent: Googlebot
 Allow: /
 
@@ -16,6 +16,15 @@ User-agent: Bingbot
 Allow: /
 
 User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: SeznamBot
 Allow: /
 
 User-agent: Applebot

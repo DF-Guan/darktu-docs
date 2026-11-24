@@ -102,5 +102,5 @@ test("MCP Server prompts and resources interfaces", async () => {
   const readReq = { jsonrpc: "2.0", id: 8, method: "resources/read", params: { uri: "darktu://docs/catalog" } };
   const readRes = await handleRpcRequest(readReq);
   const catalog = JSON.parse(readRes.result.contents[0].text);
-  assert.equal(catalog.length, 47);
+  assert.equal(catalog.length, 48);
 });

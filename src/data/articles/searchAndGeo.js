@@ -742,5 +742,129 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
 3. **与 Canvas/WASM 图像管线零拷贝互通**：
    - 在 Darktu 创意矩阵（如 [Darktu 图像工坊](https://image-atelier.darktu.com) 与 [Darktu 专业画布](https://canvas.darktu.com)）中，WebGPU 纹理与 Canvas 共享显存上下文，避免了频繁在 CPU 与 GPU 之间进行巨大的 ImageData 内存拷贝；
    - 配合 [面向 AI 搜索的 GEO 架构指南](#/generative-engine-optimization) 与 [百万上下文窗口下的信息密度](#/context-window-information-density)，构建起极速、高安全、可离线自运转的下一代 Web 应用体验。
+`,
+  "search-geo/global-search-indexing-and-indexnow": `# 全球搜索引擎收录矩阵、IndexNow 协议与新站冷启动
+
+> “做全球出海产品，最危险的假设莫过于‘提交了 Google Search Console，收录便大功告成’。在算法割据的现实世界里，从特定主权区域到次世代 AI 搜索，单一入口往往意味着对半数潜在用户的隐形遮蔽。”
+
+---
+
+## 1. 全球搜索引擎流量版图与区域割据壁垒
+
+在现代 Web 与 SaaS 产品的全球化进程中，搜索流量的分布并非 Google 一统天下。在多个经济强国、区域核心市场与垂直生态中，存在着极高市场壁垒的主权搜索引擎：
+
+| 平台名称 | 核心势力范围 | 本土市场渗透率 | 核心生态特征与不可替代性 |
+| :--- | :--- | :--- | :--- |
+| **Microsoft Bing** | 美国、企业端及全球 | ~10%~15%（Windows/Edge 原生） | **次世代 AI 搜索枢纽**：直接作为 DuckDuckGo、Yahoo!、Ecosia 以及 **ChatGPT Search、Microsoft Copilot** 的实时底层索引源。 |
+| **Yandex** | 俄罗斯及独联体 (CIS) | > 65%（全面超越 Google） | 辐射哈萨克斯坦、白俄罗斯、乌兹别克斯坦等超 2 亿俄语人口圈，IndexNow 协议联合发起方，索引极其敏锐。 |
+| **Naver** | 韩国 | 50% ~ 60% | 韩国国民级生活与技术入口。深度绑定 Naver Blog、知识人 (Kin) 与智能检索，不进 Naver 体系直接丢失半数韩国自然流量。 |
+| **Seznam** | 捷克及中东欧 | 15% ~ 25% | 欧洲唯一在本土抗衡 Google 的独立引擎，提供完备 Webmaster 诊断报告与本地化索引。 |
+| **Baidu (百度)** | 中国大陆中文市场 | 国内主导地位 | 中文技术排版与工具库的基础索引盘，提供主动推送与资源提交平台。 |
+
+\`\`\`mermaid
+flowchart TD
+    Site["新站上线 (docs.darktu.com)"] --> Single["只提交 Google Search Console (传统认知误区)"]
+    Single --> Leak["遗漏半数本地主权流量与 AI 检索节点"]
+
+    Site --> Matrix["全球搜索引擎矩阵收录 (Global Indexing Matrix)"]
+    Matrix --> G["Google (GSC 权威基线)"]
+    Matrix --> B["Bing Webmaster (GSC 一键导入 · Copilot / ChatGPT 索引)"]
+    Matrix --> Y["Yandex (俄罗斯/独联体 2 亿俄语圈)"]
+    Matrix --> N["Naver (韩国 60% 市场)"]
+    Matrix --> S["Seznam (捷克本土引擎)"]
+    Matrix --> BD["百度 / 搜狗 (中文生态底座)"]
+\`\`\`
+
+---
+
+## 2. AI 搜索时代 (GEO) 的索引溯源与战略咽喉
+
+随着以 ChatGPT Search、Microsoft Copilot 与 Perplexity 为代表的生成式 AI 搜索引擎逐渐分流传统 SERP（搜索结果页），站长面临的检索拓扑发生了本质演进：
+
+1. **AI Agent 的底层依赖**：大语言模型在执行实时联网问答（Web Browsing / Search Tools）时，并非自行漫游全网数十亿网页，而是优先调用 Bing Web Search API 与合作伙伴的高权威度索引库；
+2. **知识库的可信引用门禁**：如在 [面向 AI 搜索的 GEO 架构指南](#/generative-engine-optimization) 中所阐述，AI 引擎通过句子级证据比对对官网进行权威归因。若站点未能进入 Bing 与主流搜索引擎的实时库，AI 将判定该域名为“低置信度孤岛”，从而拒绝在回答中展示引用链接；
+3. **Bing Webmaster Tools 的战略意义**：站长可直接使用 Google Search Console 账号一键授权登录 Bing Webmaster Tools，系统将自动秒级同步所有已验证域名、DNS 凭据与 Sitemap 拓扑，实现零迁移成本的生态覆盖。
+
+---
+
+## 3. IndexNow 实时推送协议架构与 RFC 规范
+
+传统搜索引擎采用**“被动拉取 (Pull-based Crawling)”**模式：爬虫（Spider / Crawler）根据 PageRank 权威度与更新频率算法，定期对全网 URL 进行轮询探测。对于新站或新发布的深度词条，从上线到被抓取往往存在数天至数周的冷启动延迟。
+
+**IndexNow 协议**（由 Microsoft Bing 与 Yandex 联合主导、Seznam 等共同接入的开放国际标准）从根本上将检索机制重塑为**“主动推送 (Push-based Notification)”**：
+
+\`\`\`mermaid
+sequenceDiagram
+    autonumber
+    participant App as 网站发布流水线 / CI
+    participant Node as IndexNow 边缘节点 (api.indexnow.org)
+    participant Bing as Bing 索引库
+    participant Yandex as Yandex 索引库
+    participant Seznam as Seznam 索引库
+
+    App->>Node: POST /indexnow (host, key, urlList)
+    Node->>Node: 校验域名根目录 Key 文件归属权
+    par 级联广播同步 (Cascading Broadcast)
+        Node-->>Bing: 广播新增/变更 URL 列表
+        Node-->>Yandex: 广播新增/变更 URL 列表
+        Node-->>Seznam: 广播新增/变更 URL 列表
+    end
+    Node-->>App: HTTP 200 OK / 202 Accepted
+    Note over Bing,Seznam: 各引擎爬虫几秒至数分钟内优先调度抓取
+\`\`\`
+
+### 3.1 域名所有权验证 (Key Verification)
+
+IndexNow 采用免认证轻量哈希文件验证机制：
+1. 生成长度在 8 ~ 128 位的十六进制密钥（如 \`c4a96b9983194a2b97f017e2e8310c14\`）；
+2. 将文件放置在网站公共根目录：\`https://docs.darktu.com/c4a96b9983194a2b97f017e2e8310c14.txt\`；
+3. 文件文本内容严格等于该 Key 字符串；
+4. 搜索引擎通过 HTTP GET 请求比对该文件，确认提交者具备网站代码或根目录的合法控制权。
+
+### 3.2 JSON-RPC / REST 接口负载格式
+
+单次批量推送最大支持 10,000 个 URL，请求端点可选用 \`https://api.indexnow.org/indexnow\` 或 \`https://www.bing.com/indexnow\`：
+
+\`\`\`json
+{
+  "host": "docs.darktu.com",
+  "key": "c4a96b9983194a2b97f017e2e8310c14",
+  "keyLocation": "https://docs.darktu.com/c4a96b9983194a2b97f017e2e8310c14.txt",
+  "urlList": [
+    "https://docs.darktu.com/",
+    "https://docs.darktu.com/#/overview",
+    "https://docs.darktu.com/#/global-search-indexing-and-indexnow"
+  ]
+}
+\`\`\`
+
+---
+
+## 4. 边缘网关集成与自动化流水线实践
+
+在生产级 CI/CD 或边缘计算（如 Cloudflare Pages / Workers）中，推荐将 IndexNow 构建为全自动化的推送闭环：
+
+1. **Cloudflare 边缘零代码联动 (Crawler Hints)**：
+   - 在 Cloudflare 控制台中开启 **Crawler Hints** 与 **IndexNow 集成**；
+   - 当用户或 CI 部署新版本刷新 CDN 缓存时，Cloudflare 边缘节点根据 HTTP 缓存标头自动识别发生变更的静态资源，并在后台异步广播给 IndexNow，全程无需人工干预；
+2. **CI 自动化脚本推送**：
+   - 在项目自动化脚本中集成 \`scripts/submit-indexnow.mjs\`，通过读取已构建的 \`public/sitemap.xml\`，比对 Git 变更哈希或直接在 Release 流程中执行全量通知；
+3. **Robots.txt 友善准入准则**：
+   - 必须在 \`public/robots.txt\` 中明确为国际主流与区域爬虫授予完全访问权限，包括 \`Googlebot\`、\`Bingbot\`、\`YandexBot\`、\`Yeti\` (Naver)、\`SeznamBot\` 以及各大 AI 爬虫（\`GPTBot\`、\`ClaudeBot\`、\`PerplexityBot\`、\`Bytespider\` 等），杜绝因防火墙误杀导致爬虫 403 放弃收录。
+
+---
+
+## 5. Darktu 矩阵新站出海冷启动实操检查清单 (Checklist)
+
+为确保 Darktu 矩阵下的新站点（包括知识库 \`docs.darktu.com\`、专业画布 \`canvas.darktu.com\` 与图像工坊 \`atelier.darktu.com\`）上线即具备最高效的全网可见性，应严格依序执行以下八步流程：
+
+- [ ] **第 1 步 (Sitemap 与 Robots)**：生成标准化 \`sitemap.xml\`，配置支持各大 AI 爬虫与主权搜索引擎的 \`robots.txt\`；
+- [ ] **第 2 步 (Google Search Console)**：在 GSC 验证主域 DNS 或 HTML 标签，提交 Sitemap URL 并申请首次编制索引；
+- [ ] **第 3 步 (Bing Webmaster 一键导入)**：登录 Bing Webmaster Tools，使用 GSC 账号秒级一键导入，同步激活 Bing 与 AI 搜索底座；
+- [ ] **第 4 步 (IndexNow 根目录部署)**：生成 32 位 Hex Key，部署根目录验证文件，并在 CI 中配置主动推送脚本；
+- [ ] **第 5 步 (Cloudflare Crawler Hints)**：在域名 CDN 仪表盘中开启爬虫提示与 IndexNow 开关；
+- [ ] **第 6 步 (Yandex Webmaster 补齐)**：在 Yandex 提交 Sitemap，覆盖俄罗斯及独联体两亿俄语长尾流量；
+- [ ] **第 7 步 (Naver Search Advisor 验证)**：在韩国 Naver 平台完成站长验证，提交 Sitemap 与结构化标记；
+- [ ] **第 8 步 (结构化数据审计)**：利用 Schema.org 验证器校验 \`WebSite\`、\`TechArticle\`、\`SoftwareApplication\` 等 JSON-LD，完成 [面向 AI 搜索的 GEO 架构指南](#/generative-engine-optimization) 闭环。
 `
 };

@@ -14,6 +14,9 @@ test("public/robots.txt permits major web search and generative AI crawlers", ()
   const content = fs.readFileSync(robotsPath, "utf8");
 
   assert(content.includes("User-agent: *"));
+  assert(content.includes("User-agent: YandexBot"));
+  assert(content.includes("User-agent: Yeti"));
+  assert(content.includes("User-agent: SeznamBot"));
   assert(content.includes("User-agent: GPTBot"));
   assert(content.includes("User-agent: ClaudeBot"));
   assert(content.includes("User-agent: PerplexityBot"));
@@ -21,7 +24,7 @@ test("public/robots.txt permits major web search and generative AI crawlers", ()
   assert(content.includes("Sitemap: https://docs.darktu.com/sitemap.xml"));
 });
 
-test("public/sitemap.xml exhaustively indexes all 47 knowledge articles", () => {
+test("public/sitemap.xml exhaustively indexes all 48 knowledge articles", () => {
   const sitemapPath = path.resolve(__dirname, "../public/sitemap.xml");
   assert(fs.existsSync(sitemapPath), "sitemap.xml must exist in public directory");
   const xml = fs.readFileSync(sitemapPath, "utf8");
@@ -31,6 +34,7 @@ test("public/sitemap.xml exhaustively indexes all 47 knowledge articles", () => 
   assert(xml.includes("<loc>https://docs.darktu.com/#/syntax</loc>"));
   assert(xml.includes("<loc>https://docs.darktu.com/#/mcp-model-context-protocol</loc>"));
   assert(xml.includes("<loc>https://docs.darktu.com/#/webgpu-client-side-inference</loc>"));
+  assert(xml.includes("<loc>https://docs.darktu.com/#/global-search-indexing-and-indexnow</loc>"));
 
   // Check that every single article is present in sitemap
   ALL_DOCS.forEach((doc) => {
