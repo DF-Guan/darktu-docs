@@ -74,6 +74,16 @@
   - `test/indexnow.test.mjs` 硬断言 IndexNow 密钥验证文件、RFC 标准负载构建与 dry-run 机制；
   - `test/seo_and_ui_inspection.test.js` 断言 `robots.txt` 友善放行全球主权与 AI 爬虫，`sitemap.xml` 完整索引 48 篇词条。
 
+### 8. 文章实用度即时反馈与共建系统 (`src/services/feedbackService.js`, `src/styles/content.css`)
+* **User POV (用户入口)**:
+  - 读者阅读至任意文章底部，均可看到实用度互动卡片「这篇文档对您有帮助吗？ [👍 有帮助] [👎 仍有疑问]」；
+  - 点击「👍 有帮助」：获得优雅祝贺与感谢，状态本地记忆防重复干扰；
+  - 点击「👎 仍有疑问」：展示温馨提示，并提供直达 GitHub Issue 模板的预填勘误通道；支持随时撤销重新评价。
+* **Agent Drive (机器驱动 API)**:
+  - `setupArticleFeedback(containerEl, doc)`, `renderFeedbackWidgetHtml(doc, current)`, `saveArticleFeedback(docId, type)`, `getArticleFeedback(docId)`, `clearArticleFeedback(docId)`, `getFeedbackIssueUrl(doc)`.
+* **Observable State (物理可观测证明状态)**:
+  - `test/article_feedback.test.js` 机械验证 6 大核心用例：未打分状态渲染、👍 反馈状态渲染、👎 反馈及 GitHub Issue 预填参数编码、localStorage 持久化与清除、DOM 事件触发与更新。
+
 ---
 
 ## 🛠️ 机械校验指令 (Verification Command)

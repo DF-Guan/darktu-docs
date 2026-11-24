@@ -173,6 +173,7 @@ export function getWikiEditLinks(doc) {
     clipboard: "clipboardEngineering.js",
     assets: "assetsStorage.js",
     writing: "technicalWriting.js",
+    "search-geo": "searchAndGeo.js",
     appendix: "appendixMaintenance.js",
   };
   const categoryKey = (doc.id || "").split("/")[0];
