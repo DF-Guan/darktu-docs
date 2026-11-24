@@ -84,6 +84,15 @@
 * **Observable State (物理可观测证明状态)**:
   - `test/article_feedback.test.js` 机械验证 6 大核心用例：未打分状态渲染、👍 反馈状态渲染、👎 反馈及 GitHub Issue 预填参数编码、localStorage 持久化与清除、DOM 事件触发与更新。
 
+### 9. LLM-Ready 一键复制整篇 Markdown 原文与元数据导出 (`src/services/uiHelpers.js`, `src/styles/content.css`)
+* **User POV (用户入口)**:
+  - 读者在元数据条右侧点击「📄 复制 Markdown」按钮；
+  - 瞬时复制携带标准 YAML Frontmatter（标题、URL、分类、开源许可）的纯净 Markdown 全文，便于读者一键粘贴至 ChatGPT / Claude / Gemini 进行深度针对性提问；按钮自适应变为绿色「✓ 已复制 Markdown」状态并在 2 秒后复原。
+* **Agent Drive (机器驱动 API)**:
+  - `formatMarkdownForLlm(doc, rawMd)`, `setupCopyMarkdown(btnEl, doc, rawMd)`.
+* **Observable State (物理可观测证明状态)**:
+  - `test/copy_markdown.test.js` 机械验证 YAML 头部拼接契约、空异常兜底及剪贴板写入与状态切换。
+
 ---
 
 ## 🛠️ 机械校验指令 (Verification Command)

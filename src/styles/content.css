@@ -69,6 +69,36 @@
   opacity: 0.5;
 }
 
+/* 一键复制整篇 Markdown (LLM-Ready) 按钮样式 */
+.copy-markdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  margin-left: auto;
+}
+
+.copy-markdown-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+  background: var(--bg-primary);
+}
+
+.copy-markdown-btn.copied {
+  color: #16a34a;
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+}
+
 /* 正文标题与排版 */
 .docs-markdown-body {
   font-size: 15px;
