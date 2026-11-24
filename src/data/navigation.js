@@ -274,7 +274,7 @@ export const DOCS_NAVIGATION = [
   {
     id: "search-geo",
     title: "8. 检索工程与 GEO",
-    badge: "9 篇",
+    badge: "10 篇",
     items: [
       {
         id: "search-geo/hvv-hyperlink-vector-voting",
@@ -338,6 +338,13 @@ export const DOCS_NAVIGATION = [
         aliasSlugs: ["webgpu", "client-side-inference"],
         title: "WebGPU 客户端大模型与高通量着色器并行计算",
         description: "现代图形与通用计算架构跃迁、WGSL 计算着色器、端侧张量运算加速与 Canvas 零拷贝纹理共享。",
+      },
+      {
+        id: "search-geo/global-search-indexing-and-indexnow",
+        slug: "global-search-indexing-and-indexnow",
+        aliasSlugs: ["indexnow", "global-indexing", "search-engine-submission"],
+        title: "全球搜索引擎收录矩阵、IndexNow 协议与新站冷启动",
+        description: "区域割据版图 (Bing/Yandex/Naver/Seznam)、IndexNow 协议 RFC 标准、边缘网关主动推送与出海新站收录实操手册。",
       },
     ],
   },

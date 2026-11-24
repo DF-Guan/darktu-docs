@@ -9,12 +9,12 @@
 
 ### 1. 核心知识库百科渲染与大纲引擎 (`src/index.js`, `src/services/markdownRenderer.js`)
 * **User POV (用户入口)**:
-  - 访问 `https://docs.darktu.com`，点击左侧 9 大分类导航或通过 URL Hash (`#/overview`, `#/syntax`, `#/hvv-hyperlink-vector-voting`, `#/generative-engine-optimization` 等) 切换 45 篇词条；
+  - 访问 `https://docs.darktu.com`，点击左侧 9 大分类导航或通过 URL Hash (`#/overview`, `#/syntax`, `#/hvv-hyperlink-vector-voting`, `#/global-search-indexing-and-indexnow` 等) 切换 48 篇词条；
   - 页面即时呈现元数据信息头（预计阅读时间、字数、修订年月）、右侧 TOC 目录与底栏上一篇/下一篇卡片。
 * **Agent Drive (机器驱动 API)**:
   - `DarktuDocsApp.handleRoute()`, `renderMarkdown(markdown)`, `getDocBySlugOrId(slug)`.
 * **Observable State (物理可观测证明状态)**:
-  - `npm test` 中 `test/docs_integrity.test.js` 断言 45 篇词条 100% 存在、无占位符、无空内链且字数 > 200。
+  - `npm test` 中 `test/docs_integrity.test.js` 断言 48 篇词条 100% 存在、无占位符、无空内链且字数 > 200。
 
 ### 2. 维基百科式条目内链悬浮即时预览 (`src/services/wikilinkPreview.js`)
 * **User POV (用户入口)**:
@@ -64,6 +64,15 @@
 * **Observable State (物理可观测证明状态)**:
   - 关键词被 `<mark class="search-highlight">` 包裹，选中项具备 `.keyboard-active`；
   - `test/search_relevance.test.js` 机械验证标题与缩写高权直达（如 HVV）、多词联合加权与 Markdown 格式符号净化。
+
+### 7. 全球搜索引擎收录矩阵与 IndexNow 实时推送 (`scripts/submit-indexnow.mjs`, `public/robots.txt`, `public/sitemap.xml`)
+* **User POV (用户入口)**:
+  - 全球搜索引擎（Google、Bing、Yandex、Naver、Seznam、百度）与各大生成式 AI 爬虫（GPTBot、ClaudeBot、PerplexityBot 等）快速索引 48 篇知识库词条，AI 问答无缝进行可信源权威归因。
+* **Agent Drive (机器驱动 API)**:
+  - `submitToIndexNow({ urls, dryRun })`, `extractUrlsFromSitemap()`, `generate-sitemap.mjs`.
+* **Observable State (物理可观测证明状态)**:
+  - `test/indexnow.test.mjs` 硬断言 IndexNow 密钥验证文件、RFC 标准负载构建与 dry-run 机制；
+  - `test/seo_and_ui_inspection.test.js` 断言 `robots.txt` 友善放行全球主权与 AI 爬虫，`sitemap.xml` 完整索引 48 篇词条。
 
 ---
 

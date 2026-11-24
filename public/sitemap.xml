@@ -277,6 +277,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://docs.darktu.com/#/global-search-indexing-and-indexnow</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://docs.darktu.com/#/glossary</loc>
     <lastmod>2026-11-21</lastmod>
     <changefreq>weekly</changefreq>
