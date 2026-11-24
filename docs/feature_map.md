@@ -93,6 +93,20 @@
 * **Observable State (物理可观测证明状态)**:
   - `test/copy_markdown.test.js` 机械验证 YAML 头部拼接契约、空异常兜底及剪贴板写入与状态切换。
 
+### 10. 交互式 2D 知识图谱全景视网膜网络 (`src/services/graphService.js`, `src/styles/graph.css`)
+* **User POV (用户入口)**:
+  - 读者点击顶部导航栏【🕸️ 图谱】按钮，即刻展开对标 Obsidian / Quartz 的 2D 力导向全景知识拓扑图谱；
+  - 48 篇词条与内部维基超链接以星空网络呈现，节点大小自适应连通度，9 大分类映射专属调色板；
+  - 鼠标滚轮无级缩放（0.3x ~ 3.0x）、拖拽节点与画布视口平移；鼠标悬浮于任一节点时，直连邻接词条动态高亮聚焦，其余无关词条优雅淡出（0.15 沉浸透明度）；
+  - 点击节点即刻实现 SPA 路由直达跳转，支持 `Esc` 键、背景点击与复位视野交互。
+* **Agent Drive (机器驱动 API)**:
+  - `buildGraphData(docsNavigation, getArticleMarkdown)`
+  - `stepSimulation(graph, width, height, alpha)`
+  - `renderGraph(ctx, graph, state)`
+  - `setupKnowledgeGraph(getCurrentDoc)`
+* **Observable State (物理可观测证明状态)**:
+  - `test/unit_knowledge_graph.test.js` 机械验证 48 篇词条节点构建、维基内链拓扑抽取、力导向物理位移更新与高分辨率 Canvas 视网膜渲染。
+
 ---
 
 ## 🛠️ 机械校验指令 (Verification Command)

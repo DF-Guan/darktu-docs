@@ -31,7 +31,7 @@ export class DarktuDocsApp {
 
   init() {
     setupCodeCopy();
-    setupReadingProgressAndBackTop();
+    setupReadingProgressAndBackTop(() => this.currentDoc);
     setupHeadingAnchorLinks(() => this.currentDoc);
     setupWikilinkPreview();
     setupReadingSettings();

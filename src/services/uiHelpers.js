@@ -1,6 +1,7 @@
 /**
  * UI 辅助交互组件与全局事件 (uiHelpers.js)
  */
+import { setupKnowledgeGraph } from "./graphService.js";
 
 let toastTimeout = null;
 
@@ -131,8 +132,9 @@ export function setupHeadingAnchorLinks(getCurrentDoc) {
   });
 }
 
-export function setupReadingProgressAndBackTop() {
+export function setupReadingProgressAndBackTop(getCurrentDoc) {
   if (typeof window === "undefined") return;
+  setupKnowledgeGraph(getCurrentDoc);
   const bar = document.getElementById("readingProgressBar");
   const backTopBtn = document.getElementById("backToTopBtn");
 
