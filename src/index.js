@@ -14,6 +14,7 @@ import {
   setupReadingProgressAndBackTop,
   setupHeadingAnchorLinks,
   getWikiEditLinks,
+  setupCopyMarkdown,
 } from "./services/uiHelpers.js";
 import { setupWikilinkPreview } from "./services/wikilinkPreview.js";
 import { setupKeyboardShortcuts } from "./services/keyboardShortcuts.js";
@@ -188,7 +189,13 @@ export class DarktuDocsApp {
         <span class="docs-meta-item">字数：约 ${wordCount} 字</span>
         <span class="docs-meta-divider"></span>
         <span class="docs-meta-item">修订：2026-09</span>
+        <span class="docs-meta-divider"></span>
+        <button type="button" class="copy-markdown-btn" id="copyMarkdownBtn" aria-label="复制整篇 Markdown 原文，便于 AI 问答引用">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          <span>复制 Markdown</span>
+        </button>
       `;
+      setupCopyMarkdown(document.getElementById("copyMarkdownBtn"), doc, rawMd);
     }
 
     const { html, toc } = renderMarkdown(rawMd);

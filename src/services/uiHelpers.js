@@ -186,3 +186,50 @@ export function getWikiEditLinks(doc) {
   )}`;
   return { editUrl, issueUrl };
 }
+
+/**
+ * 格式化输出携带规范元数据的 LLM 友好 Markdown 全文
+ */
+export function formatMarkdownForLlm(doc, rawMd) {
+  if (!doc) return rawMd || "";
+  const header = [
+    "---",
+    `title: "${(doc.title || "").replace(/"/g, '\\"')}"`,
+    `category: "${(doc.categoryTitle || "").replace(/"/g, '\\"')}"`,
+    `url: "https://docs.darktu.com/#/${doc.slug || ""}"`,
+    `source: "Darktu Docs"`,
+    `license: "CC BY-NC-SA 4.0"`,
+    "---",
+    "",
+    ""
+  ].join("\n");
+  return `${header}${rawMd || ""}`;
+}
+
+/**
+ * 绑定一键复制 Markdown 全文按钮交互
+ */
+export function setupCopyMarkdown(btnEl, doc, rawMd) {
+  if (!btnEl || !doc) return;
+  btnEl.addEventListener("click", () => {
+    const textToCopy = formatMarkdownForLlm(doc, rawMd);
+    if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        btnEl.classList.add("copied");
+        const span = btnEl.querySelector("span");
+        const oldText = span ? span.innerText : "";
+        if (span) span.innerText = "已复制 Markdown";
+        showToast("整篇 Markdown 已复制，可直接粘贴给 AI 提问 🤖");
+        setTimeout(() => {
+          btnEl.classList.remove("copied");
+          if (span) span.innerText = oldText;
+        }, 2000);
+      }).catch((err) => {
+        console.warn("[setupCopyMarkdown] clipboard write failed:", err);
+        showToast("复制失败，请重试");
+      });
+    } else {
+      showToast("当前环境不支持自动复制");
+    }
+  });
+}
