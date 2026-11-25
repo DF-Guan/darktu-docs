@@ -55,15 +55,15 @@
 * **Observable State (物理可观测证明状态)**:
   - `#docsToast.visible` 类名触发，`heading.heading-highlight-pulse` 激活。
 
-### 6. 全局检索高亮与方向键直达 (`src/services/searchService.js`, `src/services/searchUI.js`)
+### 6. 全局精确检索、章节深层锚点直达与拼写容错 (`src/services/searchService.js`, `src/services/searchUI.js`)
 * **User POV (用户入口)**:
-  - 按 `Ctrl+K` 或 `/` 呼出弹窗，输入文字实时检索；
-  - 标题、英文缩写与摘要中的关键词高亮呈现，支持键盘上下方向键选择结果，按 Enter 回车跳转；按 Escape 快速关闭并原位恢复焦点。
+  - 按 `Ctrl+K` 或 `/` 或通过 `#/search?q=` 路由呼出弹窗，支持中英混合无空格查询（如 `Markdown表格`）、中文复合词（如 `中文排版规范`、`公式对齐`）、代码块技术符号（如 `bmatrix`）以及英文轻度拼写容错（如 `katx` -> `KaTeX`）；
+  - 结果卡片不仅高亮标题与最佳密度上下文摘要，更精确定位到最佳匹配小节（`§ 小节标题`），点击或回车直接跳转并平滑滚动至 `#/slug#anchor`。
 * **Agent Drive (机器驱动 API)**:
-  - `searchKnowledgeBase(query)`, `highlightKeywords(text, query)`, `setupSearchUI()`, `stripMarkdown(md)`, `extractAcronymsAndKeywords(text)`.
+  - `searchKnowledgeBase(query, docs, articles, options)`, `tokenizeQuery(query)`, `extractSections(rawMarkdown)`, `buildSearchIndex(docs, articles)`, `damerauLevenshtein(a, b)`, `highlightKeywords(text, query)`, `renderSearchResultsMarkup(query, results)`, `setupSearchUI()`.
 * **Observable State (物理可观测证明状态)**:
-  - 关键词被 `<mark class="search-highlight">` 包裹，选中项具备 `.keyboard-active`；
-  - `test/search_relevance.test.js` 机械验证标题与缩写高权直达（如 HVV）、多词联合加权与 Markdown 格式符号净化。
+  - `searchService` 自动转义 `<tag>` 等 HTML 实体再注入 `<mark class="search-highlight">`，杜绝 XSS 与标签吞没；结果卡片携带 `#/slug#anchor` 深链与 `§ 小节`徽标；
+  - `test/search_relevance.test.js` 与 `test/mcp_server.test.mjs` 机械验证 BM25/IDF 排序精确度、中英边界切分、章节锚点直达、拼写容错恢复与尾噪音裁剪。
 
 ### 7. 全球搜索引擎收录矩阵与 IndexNow 实时推送 (`scripts/submit-indexnow.mjs`, `public/robots.txt`, `public/sitemap.xml`)
 * **User POV (用户入口)**:

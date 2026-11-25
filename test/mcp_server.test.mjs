@@ -51,6 +51,8 @@ test("MCP Server tools/list and tools/call on darktu_search_docs", async () => {
   const payload = JSON.parse(callRes.result.content[0].text);
   assert.ok(payload.totalHits >= 1);
   assert(payload.results[0].slug.includes("hvv"));
+  assert.ok(payload.results[0].anchor && payload.results[0].sectionTitle);
+  assert(payload.results[0].url.includes(`#${payload.results[0].anchor}`));
 });
 
 test("MCP Server tools/call on darktu_get_doc retrieves accurate markdown", async () => {

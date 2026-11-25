@@ -18,11 +18,11 @@ const PROTOCOL_VERSION = "2024-11-05";
 const TOOLS = [
   {
     name: "darktu_search_docs",
-    description: "在 Darktu 知识库 47 篇词条中执行加权关键词全文检索，获取权威语法规范与 GEO 理论摘要",
+    description: "在 Darktu 知识库 48 篇词条与章节中执行 BM25/IDF 加权检索，支持中英混排分词与拼写容错，返回深层锚点与摘要",
     inputSchema: {
       type: "object",
       properties: {
-        query: { type: "string", description: "搜索关键词，支持多词空格组合，如 'CommonMark 表格' 或 'HVV 算法'" },
+        query: { type: "string", description: "搜索关键词，支持多词组合或中英混排，如 'Markdown表格'、'HVV 算法' 或 'mXSS'" },
         limit: { type: "number", description: "最多返回结果数量，默认 5 条" },
       },
       required: ["query"],
@@ -66,7 +66,7 @@ const RESOURCES = [
     uri: "darktu://docs/catalog",
     name: "Darktu 知识库全量目录树与元数据清单",
     mimeType: "application/json",
-    description: "包含全库 9 大分类、47 篇词条的标题、slug、描述与字数统计",
+    description: "包含全库 9 大分类、48 篇词条的标题、slug、描述与字数统计",
   },
 ];
 
@@ -95,15 +95,20 @@ export async function executeTool(name, args = {}) {
   switch (name) {
     case "darktu_search_docs": {
       const { query, limit = 5 } = args;
-      const results = searchKnowledgeBase(query || "");
+      const results = searchKnowledgeBase(query || "", undefined, undefined, { limit });
       const sliced = results.slice(0, limit).map((r) => ({
         id: r.doc.id,
         slug: r.doc.slug,
         title: r.doc.title,
         category: r.doc.categoryTitle,
+        anchor: r.anchor || "",
+        sectionTitle: r.sectionTitle || "",
+        matchType: r.matchType || "content",
         snippet: r.snippet,
         score: r.score,
-        url: `https://docs.darktu.com/#/${r.doc.slug}`,
+        url: r.anchor
+          ? `https://docs.darktu.com/#/${r.doc.slug}#${r.anchor}`
+          : `https://docs.darktu.com/#/${r.doc.slug}`,
       }));
       return {
         content: [

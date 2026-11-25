@@ -121,6 +121,48 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.search-result-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.search-result-badge.fuzzy {
+  font-size: 10px;
+  font-weight: 600;
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+
+.search-result-section {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-primary);
+  opacity: 0.92;
+}
+
+.search-section-icon {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.search-results-summary {
+  padding: 4px 12px 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle, var(--border-color));
+  margin-bottom: 2px;
 }
 
 .search-result-title {
